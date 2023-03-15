@@ -51,9 +51,15 @@ namespace Medfast.Services.MedicationAPI.Controllers
         return _response;
     }
 
+        [HttpGet("Search")]
+        public async Task<ActionResult<IEnumerable<MedicineDto>>> SearchMedicines(string name)
+        {
+            var medicines = await _medicineRepository.GetMedicineByName(name);
+            return Ok(medicines);
+        }
 
 
-    [HttpPost]
+        [HttpPost]
     public async Task<object> Post([FromBody] MedicineDto medicineDto)
     {
         try

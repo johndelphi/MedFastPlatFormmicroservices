@@ -17,20 +17,20 @@ namespace Medfast.Services.MedicationAPI.Repository
 
     }
 
-    public async Task<MedicineDto> AddMedicine(MedicineDto medicineDto)
-    {
-     Medicine medicine = _mapper.Map<MedicineDto, Medicine>(medicineDto);
-      if (medicine.MedicineId > 0)
-      {
-        _db.Medicines.Update(medicine);
-      }
-      else
-      {
-        _db.Medicines.Add(medicine);
-      }
-      await _db.SaveChangesAsync();
-      return _mapper.Map<Medicine, MedicineDto>(medicine);
-    }
+    //public async Task<MedicineDto> AddMedicine(MedicineDto medicineDto)
+    //{
+    // Medicine medicine = _mapper.Map<MedicineDto, Medicine>(medicineDto);
+    //  if (medicine.MedicineId > 0)
+    //  {
+    //    _db.Medicines.Update(medicine);
+    //  }
+    //  else
+    //  {
+    //    _db.Medicines.Add(medicine);
+    //  }
+    //  await _db.SaveChangesAsync();
+    //  return _mapper.Map<Medicine, MedicineDto>(medicine);
+    //}
 
     public async Task<bool> DeleteMedicine(int medicineId)
     {
@@ -59,14 +59,14 @@ namespace Medfast.Services.MedicationAPI.Repository
         //  return _mapper.Map<MedicineDto>(medicine);
         //}
 
-        //public async Task<IEnumerable<MedicineDto>> GetMedicineByName(string name)
-        //{
-        //  var medicines = await _db.Medicines
-        //    .Where(m => m.MedicineName.ToLower().Contains(name.ToLower()))
-        //    .ToListAsync();
-        //  var medicineDtos = _mapper.Map<List<MedicineDto>>(medicines);
-        //  return medicineDtos;
-        //}
+        public async Task<IEnumerable<MedicineDto>> GetMedicineByName(string name)
+        {
+            var medicines = await _db.Medicines
+              .Where(m => m.MedicineName.ToLower().Contains(name.ToLower()))
+              .ToListAsync();
+            var medicineDtos = _mapper.Map<List<MedicineDto>>(medicines);
+            return medicineDtos;
+        }
 
         public async Task<IEnumerable<MedicineDto>> GetMedicines()
         {
@@ -85,20 +85,18 @@ namespace Medfast.Services.MedicationAPI.Repository
 
         }
 
-        async Task <MedicineDto>IMedicineRepository.AddMedicine(MedicineDto medicineDto)
-    {
-      Medicine medicine = _mapper.Map<MedicineDto,Medicine>(medicineDto);
-      if (medicine.MedicineId > 0)
-      {
-          _db.Medicines.Update(medicine);
-      }
+        public async Task<MedicineDto> AddMedicine(MedicineDto medicineDto)
+        {
+            var medicine = _mapper.Map<Medicine>(medicineDto);
 
-      await _db.SaveChangesAsync();
+            _db.Medicines.Add(medicine);
+            await _db.SaveChangesAsync();
 
-      return  _mapper.Map<Medicine,MedicineDto>(medicine);
-    }
+            return _mapper.Map<MedicineDto>(medicine);
+        }
 
-    async Task<bool> IMedicineRepository.DeleteMedicine(int medicineId)
+
+        async Task<bool> IMedicineRepository.DeleteMedicine(int medicineId)
     {
         try
         {
@@ -124,11 +122,11 @@ namespace Medfast.Services.MedicationAPI.Repository
         return _mapper.Map<MedicineDto>(medicine);
     }
 
-    public async Task<MedicineDto> GetMedicineByName(string name)
-    {
-      var medicine = await _db.Medicines.FirstOrDefaultAsync(m => m.MedicineName == name);
-      return _mapper.Map<MedicineDto>(medicine);
-    }
+    //public async Task<MedicineDto> GetMedicineByName(string name)
+    //{
+    //  var medicine = await _db.Medicines.FirstOrDefaultAsync(m => m.MedicineName == name);
+    //  return _mapper.Map<MedicineDto>(medicine);
+    //}
 
 
   }

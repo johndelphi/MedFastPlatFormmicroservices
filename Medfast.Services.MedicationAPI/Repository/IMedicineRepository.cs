@@ -7,8 +7,9 @@ namespace Medfast.Services.MedicationAPI.Repository
     Task<IEnumerable<MedicineDto>> GetMedicines();
     Task<MedicineDto> AddMedicine(MedicineDto medicineDto);
     Task<bool> DeleteMedicine(int medicineId);
+    Task<IEnumerable<MedicineDto>> GetMedicineByName(string name);
 
 
 
-    }
+  }
 }
