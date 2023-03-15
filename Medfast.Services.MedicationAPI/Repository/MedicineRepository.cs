@@ -70,10 +70,10 @@ namespace Medfast.Services.MedicationAPI.Repository
 
         public async Task<IEnumerable<MedicineDto>> GetMedicines()
         {
-            var medicines = await _db.Medicines.ToListAsync();
-            var medicineDtos = _mapper.Map<IEnumerable<Medicine>, IEnumerable<MedicineDto>>(medicines);
 
-            return medicineDtos;
+
+            List<Medicine> medicineList = await _db.Medicines.ToListAsync();
+            return _mapper.Map<List<MedicineDto>>(medicineList);
 
         }
 

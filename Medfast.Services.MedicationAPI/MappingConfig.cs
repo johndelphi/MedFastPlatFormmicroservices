@@ -8,10 +8,11 @@ namespace Medfast.Services.MedicationAPI
   {
     public static MapperConfiguration RegisterMaps()
     {
-      var mappingCofig = new MapperConfiguration(config => {
-       
-        config.CreateMap<MedicineDto, Medicine>();
-        config.CreateMap<Medicine, MedicineDto>();
+      var mappingCofig = new MapperConfiguration(config =>
+      {
+
+          config.CreateMap<MedicineDto, Medicine>(); 
+          config.CreateMap<Medicine, MedicineDto>();
       });
       return mappingCofig;
 
