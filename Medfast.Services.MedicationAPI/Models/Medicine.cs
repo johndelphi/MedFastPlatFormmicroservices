@@ -19,5 +19,10 @@ namespace Medfast.Services.MedicationAPI.Models
         public string Category { get; set; }
 
         public  string ImageUrl { get; set; }
+
+    public static implicit operator Medicine(List<Medicine> v)
+    {
+      throw new NotImplementedException();
     }
+  }
 }
