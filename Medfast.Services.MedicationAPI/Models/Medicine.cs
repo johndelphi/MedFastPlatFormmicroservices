@@ -16,6 +16,8 @@ namespace Medfast.Services.MedicationAPI.Models
         [Required]
         public  double price { get; set; }
 
+        public  double? MedicineDiscount { get; set; }
+
         public string Category { get; set; }
 
         public  string ImageUrl { get; set; }

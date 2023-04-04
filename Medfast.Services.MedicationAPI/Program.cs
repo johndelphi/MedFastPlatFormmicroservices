@@ -3,7 +3,7 @@ using Medfast.Services.MedicationAPI;
 using Medfast.Services.MedicationAPI.DbContexts;
 using Medfast.Services.MedicationAPI.Repository;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.AspNetCore.Cors;
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -23,6 +23,24 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 IMapper mapper = MappingConfig.RegisterMaps().CreateMapper();
 builder.Services.AddSingleton(mapper);
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", build =>
+    {
+        
+        build.WithOrigins("http://localhost:3000", "http://localhost:59002")
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
+
+//enable cors for single domain
+//multiple domain
+//
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -31,6 +49,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("CorsPolicy");
 
 app.UseHttpsRedirection();
 
