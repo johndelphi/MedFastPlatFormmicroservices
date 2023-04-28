@@ -17,6 +17,38 @@ namespace Medfast.Services.MedicationAPI.Repository
 
     }
 
+    public async Task<List<PharmacyMedicineDto>> GetMedicinesByName(string name, int? pharmacyId = null)
+    {
+      var query = _db.PharmacyPrices
+          .Include(pp => pp.Medicine)
+          .Include(pp => pp.Pharmacy)
+          .Where(pp => pp.Medicine.MedicineName.Contains(name));
+
+      if (pharmacyId.HasValue)
+      {
+        query = query.Where(pp => pp.PharmacyId == pharmacyId.Value);
+      }
+
+      var medicines = await query
+          .OrderBy(pp => pp.Price)
+          .Select(pp => new PharmacyMedicineDto
+          {
+            MedicineId = pp.MedicineId,
+            MedicineName = pp.Medicine.MedicineName,
+            MedicineDescription = pp.Medicine.MedicineDescription,
+            Category = pp.Medicine.Category,
+            ImageUrl = pp.Medicine.ImageUrl,
+            Price = pp.Price,
+            PharmacyId = pp.PharmacyId, // Add this line
+            PharmacyName = pp.Pharmacy.PharmacyName // Add this line
+          })
+          .ToListAsync();
+
+      return medicines;
+    }
+
+
+
     //public async Task<MedicineDto> AddMedicine(MedicineDto medicineDto)
     //{
     // Medicine medicine = _mapper.Map<MedicineDto, Medicine>(medicineDto);

@@ -6,13 +6,16 @@ using Microsoft.Identity.Client;
 
 namespace Medfast.Services.MedicationAPI.DbContexts
 {
-    public class ApplicationDbContext : DbContext
+  public class ApplicationDbContext : DbContext
+  {
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext>options): base(options)
-        {
 
 
-        }
-        public  DbSet<Medicine>Medicines { get; set; }
     }
+    public DbSet<Medicine> Medicines { get; set; }
+    public DbSet<Pharmacy> Pharmacies { get; set; }
+    public DbSet<PharmacyPrice> PharmacyPrices { get; set; }
+
+  }
 }
