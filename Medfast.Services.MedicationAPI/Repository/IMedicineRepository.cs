@@ -2,7 +2,7 @@
 namespace Medfast.Services.MedicationAPI.Repository
 {
   public interface IMedicineRepository
-  {
+  {//creating new main
     Task<MedicineDto> GetMedicineById(int medicineid);
     Task<IEnumerable<MedicineDto>> GetMedicines();
     Task<MedicineDto> AddMedicine(MedicineDto medicineDto);
