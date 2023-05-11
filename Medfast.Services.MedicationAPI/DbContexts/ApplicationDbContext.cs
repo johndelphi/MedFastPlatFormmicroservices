@@ -13,6 +13,10 @@ namespace Medfast.Services.MedicationAPI.DbContexts
 
 
         }
-        public  DbSet<Medicine>Medicines { get; set; }
+        public  DbSet<Medicine?> Medicines { get; set; }
+        public DbSet<Pharmacy> Pharmacies { get; set; }
+        public DbSet<PharmacyMedicine> PharmacyMedicines { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Transaction> Transactions { get; set; }
     }
 }

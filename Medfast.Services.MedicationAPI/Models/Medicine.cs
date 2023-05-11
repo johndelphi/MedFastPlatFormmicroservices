@@ -6,25 +6,21 @@ namespace Medfast.Services.MedicationAPI.Models
     public class Medicine
     {
         [Key]
-        public  int MedicineId { get; set; }
+        public int MedicineId { get; set; }
 
         [Required]
         public string MedicineName { get; set; }
 
-        [Required]
-        public string MedicineDescription { get;set; }
-        [Required]
-        public  double price { get; set; }
-
-        public  double? MedicineDiscount { get; set; }
+        [MaxLength(500)]
+        public string MedicineDescription { get; set; }
 
         public string Category { get; set; }
 
-        public  string ImageUrl { get; set; }
+        public string ImageUrl { get; set; }
 
-    public static implicit operator Medicine(List<Medicine> v)
-    {
-      throw new NotImplementedException();
+        // Navigation property
+        public List<PharmacyMedicine> PharmacyMedicines { get; set; }
     }
-  }
+
+   
 }
