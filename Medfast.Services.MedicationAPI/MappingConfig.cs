@@ -31,10 +31,14 @@ namespace Medfast.Services.MedicationAPI
                 config.CreateMap<Transaction, TransactionDto>();
 
                 config.CreateMap<PharmacyMedicineDto, PharmacyMedicine>();
-                config.CreateMap<PharmacyMedicine, PharmacyMedicineDto>();
-                config.CreateMap<PharmacyAccountCreateDto, PharmacyDto>();
-                ;
+                config.CreateMap<PharmacyMedicine, PharmacyMedicineDto>()
+                    .ForMember(dest => dest.PharmacyName, opt => opt.MapFrom(src => src.Pharmacy.PharmacyName))
+                    .ForMember(dest => dest.Latitude, opt => opt.MapFrom(src => src.Pharmacy.Latitude))
+                    .ForMember(dest => dest.Longitude, opt => opt.MapFrom(src => src.Pharmacy.Longitude))
+                    .ForMember(dest => dest.Pharmacy, opt => opt.MapFrom(src => src.Pharmacy));
 
+                config.CreateMap<PharmacyAccountCreateDto, Pharmacy>();
+                config.CreateMap<Pharmacy, PharmacyAccountCreateDto>();
             });
             return mappingConfig;
         }

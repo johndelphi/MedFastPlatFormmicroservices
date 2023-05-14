@@ -3,50 +3,31 @@ namespace Medfast.Services.MedicationAPI.Models.Dto.CreatePharmacyDto;
 
     public class PharmacyAccountCreateDto
     {
-            [Required]
-            [StringLength(50)]
-            public string PharmacyName { get; set; }
-    
-            [Required]
-            [StringLength(50)]
-            public string Region { get; set; }
-    
-            [Required]
-            [StringLength(20)]
-            public string PhoneNumber { get; set; }
-    
-            [Required]
-            public double DistanceInKm { get; set; }
-    
-            [Required]
-            [StringLength(50)]
-            public string City { get; set; }
-    
-            [Required]
-            [StringLength(50)]
-            public string SubCity { get; set; }
-    
-            [Required]
-            [StringLength(50)]
-            public string Landmark { get; set; }
-    
-            [Required]
-            public double Latitude { get; set; }
-    
-            [Required]
-            public double Longitude { get; set; }
-    
-            [Required]
-            [StringLength(50)]
-            public string UserName { get; set; }
-    
-            [Required]
-            [StringLength(50)]
-            [EmailAddress]
-            public string Email { get; set; }
-    
-            [Required]
-            [StringLength(20, MinimumLength = 6)]
-            public string Password { get; set; }
+             [Required(ErrorMessage = "Pharmacy name is required.")]
+        [MaxLength(100, ErrorMessage = "Pharmacy name cannot exceed 100 characters.")]
+        public string PharmacyName { get; set; }
+
+        [MaxLength(50, ErrorMessage = "Region cannot exceed 50 characters.")]
+        public string Region { get; set; }
+
+        [Required(ErrorMessage = "City is required.")]
+        [MaxLength(50, ErrorMessage = "City cannot exceed 50 characters.")]
+        public string City { get; set; }
+
+        [MaxLength(50, ErrorMessage = "Sub city cannot exceed 50 characters.")]
+        public string SubCity { get; set; }
+
+        [MaxLength(100, ErrorMessage = "Landmark cannot exceed 100 characters.")]
+        public string Landmark { get; set; }
+
+        [Required(ErrorMessage = "Phone number is required.")]
+        [Phone(ErrorMessage = "Invalid phone number.")]
+        public string PhoneNumber { get; set; }
+
+        [Required(ErrorMessage = "Latitude is required.")]
+        public double Latitude { get; set; }
+
+        [Required(ErrorMessage = "Longitude is required.")]
+        public double Longitude { get; set; }
     }
            

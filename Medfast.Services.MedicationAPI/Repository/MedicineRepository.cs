@@ -22,21 +22,7 @@ namespace Medfast.Services.MedicationAPI.Repository
 
     }
 
-    //public async Task<MedicineDto> AddMedicine(MedicineDto medicineDto)
-    //{
-    // Medicine medicine = _mapper.Map<MedicineDto, Medicine>(medicineDto);
-    //  if (medicine.MedicineId > 0)
-    //  {
-    //    _db.Medicines.Update(medicine);
-    //  }
-    //  else
-    //  {
-    //    _db.Medicines.Add(medicine);
-    //  }
-    //  await _db.SaveChangesAsync();
-    //  return _mapper.Map<Medicine, MedicineDto>(medicine);
-    //}
-
+   
     public async Task<bool> DeleteMedicine(int medicineId)
     {
       try
@@ -163,11 +149,11 @@ namespace Medfast.Services.MedicationAPI.Repository
         return _mapper.Map<MedicineDto>(medicine);
     }
 
-    //public async Task<MedicineDto> GetMedicineByName(string name)
-    //{
-    //  var medicine = await _db.Medicines.FirstOrDefaultAsync(m => m.MedicineName == name);
-    //  return _mapper.Map<MedicineDto>(medicine);
-    //}
+    public async Task<MedicineDto> GetMedicineByNameph(string name)
+    {
+     var medicine = await _db.Medicines.FirstOrDefaultAsync(m => m.MedicineName == name);
+     return _mapper.Map<MedicineDto>(medicine);
+    }
 
 
   }

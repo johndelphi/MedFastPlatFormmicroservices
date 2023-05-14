@@ -6,8 +6,7 @@ public class PharmacyMedicineDto
     public string? PharmacyName { get; set; } 
     public double Price { get; set; }
     
-    public string? PhoneNumber { get; set; }
-    
+   
     public double Latitude { get; set; }
     public double? MedicineDiscount { get; set; }
     public int QuantityInStock { get; set; }

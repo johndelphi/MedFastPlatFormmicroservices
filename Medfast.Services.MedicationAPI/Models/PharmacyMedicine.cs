@@ -10,7 +10,7 @@ public class PharmacyMedicine
 
     public int MedicineId { get; set; }
     public Medicine Medicine { get; set; }
-    public string PhoneNumber { get; set; } 
+   
     public int PharmacyId { get; set; }
     public Pharmacy Pharmacy { get; set; }
 
