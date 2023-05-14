@@ -2,11 +2,24 @@ using AutoMapper;
 using Medfast.Services.MedicationAPI;
 using Medfast.Services.MedicationAPI.DbContexts;
 using Medfast.Services.MedicationAPI.Repository;
+using Medfast.Services.MedicationAPI.Repository.PharmacyRepository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Cors;
+using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.SystemConsole.Themes;
+
 var builder = WebApplication.CreateBuilder(args);
 
+//logger 
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .WriteTo.Console(theme: AnsiConsoleTheme.Code)
+    .CreateLogger();
 
+builder.Logging.AddSerilog(Log.Logger);
 
 // Add services to the container.
 
@@ -16,6 +29,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IMedicineRepository, MedicineRepository>();
+builder.Services.AddScoped<IPharmacyRepository, PharmacyRepository>();
+
 
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
