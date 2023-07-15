@@ -13,8 +13,8 @@ using Medfast.Services.MedicationAPI.Repository;
 namespace Medfast.Services.MedicationAPI.Controllers;
 
 
-    [ApiController]
-        [Route("api/[controller]")]
+    
+        [Route("api/pharmacies")]
         public class PharmacyController : ControllerBase
         {
             private readonly IMapper _mapper;
@@ -27,8 +27,14 @@ namespace Medfast.Services.MedicationAPI.Controllers;
                 _pharmacyRepository = pharmacyRepository;
                 _medicineRepository = medicineRepository;
             }
-         
-            [HttpPost]
+            /// <summary>
+            /// Creates a new pharmacy.
+            /// </summary>
+            /// <param name="pharmacyForCreationDto">The data for creating the pharmacy.</param>
+            /// <returns>The created pharmacy.</returns>
+            [HttpPost("create")]
+            [ProducesResponseType(StatusCodes.Status200OK)]
+            [ProducesResponseType(StatusCodes.Status400BadRequest)]
             public async Task<IActionResult> CreatePharmacy(PharmacyAccountCreateDto pharmacyForCreationDto)
             {
                 if (!ModelState.IsValid)
@@ -61,8 +67,18 @@ namespace Medfast.Services.MedicationAPI.Controllers;
 
                 return Ok();
             }
-            
+            /// <summary>
+            /// Adds a medicine to the inventory of a pharmacy.
+            /// </summary>
+            /// <param name="pharmacyId">The ID of the pharmacy.</param>
+            /// <param name="pharmacyMedicineCreateDto">The data for adding the medicine.</param>
+            /// <returns>The added pharmacy medicine.</returns>
+            [HttpPost("{pharmacyId}/medicines")]
+            [ProducesResponseType(StatusCodes.Status201Created)]
+            [ProducesResponseType(StatusCodes.Status400BadRequest)]
+            [ProducesResponseType(StatusCodes.Status404NotFound)]
             [HttpPost("pharmacies/{pharmacyId}/medicines")]
+            
             public async Task<IActionResult> AddMedicineToInventory(int pharmacyId, PharmacyMedicineCreateDto pharmacyMedicineCreateDto)
             {
                 if (!ModelState.IsValid)

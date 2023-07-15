@@ -7,42 +7,44 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Medfast.Services.MedicationAPI.Repository
 {
-  public class MedicineRepository : IMedicineRepository
-  {
-    private readonly ApplicationDbContext _db;
-    private readonly ILogger<MedicineRepository> _logger;
-    private IMapper _mapper;
-    
-    
-    public MedicineRepository(ApplicationDbContext db,IMapper mapper,ILogger<MedicineRepository> logger)
+    public class MedicineRepository : IMedicineRepository
     {
-      _db = db; 
-      _mapper = mapper;
-      _logger = logger;
+        private readonly ApplicationDbContext _db;
+        private readonly ILogger<MedicineRepository> _logger;
+        private IMapper _mapper;
 
-    }
 
-   
-    public async Task<bool> DeleteMedicine(int medicineId)
-    {
-      try
-      {
-        Medicine? medicine = await _db.Medicines.FirstOrDefaultAsync(u => u != null && u.MedicineId == medicineId);
-        if(medicine == null)
+        public MedicineRepository(ApplicationDbContext db, IMapper mapper, ILogger<MedicineRepository> logger)
         {
-          return false;
-        }
-        _db.Medicines.Remove(medicine);
-        await _db.SaveChangesAsync();
-        return true;
-      }
-      catch (Exception)
-      {
+            _db = db;
+            _mapper = mapper;
+            _logger = logger;
 
-        return false;
-      }
-     
-    }
+        }
+
+
+        public async Task<bool> DeleteMedicine(int medicineId)
+        {
+            try
+            {
+                Medicine? medicine =
+                    await _db.Medicines.FirstOrDefaultAsync(u => u != null && u.MedicineId == medicineId);
+                if (medicine == null)
+                {
+                    return false;
+                }
+
+                _db.Medicines.Remove(medicine);
+                await _db.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+
+                return false;
+            }
+
+        }
 
         //public  async Task<MedicineDto> GetMedicineById(int medicineId)
         //{
@@ -62,26 +64,29 @@ namespace Medfast.Services.MedicationAPI.Repository
 
                 var medicineDtos = _mapper.Map<List<MedicineDto>>(medicines);
 
-                foreach (var medicineDto in medicineDtos)
-                {
-                    var pharmacyDtos = medicineDto.PharmacyMedicines
-                        .Where(pm => pm.QuantityInStock > 0)
-                        .Select(pm => new PharmacyDto
-                        {
-                            PharmacyId = pm.Pharmacy.PharmacyId,
-                            PharmacyName = pm.Pharmacy.PharmacyName,
-                            Region = pm.Pharmacy.Region,
-                            City = pm.Pharmacy.City,
-                            SubCity = pm.Pharmacy.SubCity,
-                            Landmark = pm.Pharmacy.Landmark,
-                            Latitude = pm.Pharmacy.Latitude,
-                            Longitude = pm.Pharmacy.Longitude,
-                            DistanceInKm = 0 // Set to 0 for now, but you can calculate this based on the user's location
-                        })
-                        .ToList();
+                /*  foreach (var medicineDto in medicineDtos)
+                  {
+                      var pharmacyDtos = medicineDto.PharmacyMedicines
+                          .Where(pm => pm.QuantityInStock > 0)
+                          .Select(pm => new PharmacyDto
+                          {
+                              PharmacyId = pm.Pharmacy.PharmacyId,
+                              PharmacyName = pm.Pharmacy.PharmacyName,
+                              Region = pm.Pharmacy.Region,
+                              City = pm.Pharmacy.City,
+                              SubCity = pm.Pharmacy.SubCity,
+                              Landmark = pm.Pharmacy.Landmark,
+                              Latitude = pm.Pharmacy.Latitude,
+                              Longitude = pm.Pharmacy.Longitude,
+                              DistanceInKm = 0 // Set to 0 for now, but you can calculate this based on the user's location
+                          })
+                          .ToList();
 
-                    medicineDto.Pharmacies = pharmacyDtos;
-                }
+
+
+
+                  }*/
+
 
                 return medicineDtos;
             }
@@ -124,37 +129,63 @@ namespace Medfast.Services.MedicationAPI.Repository
 
 
         async Task<bool> IMedicineRepository.DeleteMedicine(int medicineId)
-    {
-        try
         {
-            Medicine? medicine = await _db.Medicines.FirstOrDefaultAsync(u => u.MedicineId == medicineId);
-            if (medicine == null)
+            try
+            {
+                Medicine? medicine = await _db.Medicines.FirstOrDefaultAsync(u => u.MedicineId == medicineId);
+                if (medicine == null)
+                {
+                    return false;
+                }
+
+                _db.Medicines.Remove(medicine);
+                await _db.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
             {
                 return false;
             }
-
-            _db.Medicines.Remove(medicine);
-            await _db.SaveChangesAsync();
-            return true;
         }
-        catch (Exception )
+
+        public async Task<MedicineDto> GetMedicineById(int medicineid)
         {
-            return false;
+            Medicine medicine = await _db.Medicines.Where(x => x.MedicineId == medicineid).FirstOrDefaultAsync();
+            return _mapper.Map<MedicineDto>(medicine);
         }
+
+        public async Task<MedicineDto> GetMedicineByNameph(string name)
+        {
+            var medicine = await _db.Medicines.FirstOrDefaultAsync(m => m.MedicineName == name);
+            return _mapper.Map<MedicineDto>(medicine);
+        }
+        public async Task<MedicineDto> UpdateMedicine(MedicineDto medicineDto)
+        {
+            try
+            {
+                var existingMedicine = await _db.Medicines.FirstOrDefaultAsync(m => m.MedicineId == medicineDto.MedicineId);
+                if (existingMedicine == null)
+                {
+                    return null;
+                }
+
+                existingMedicine.MedicineName = medicineDto.MedicineName;
+                existingMedicine.MedicineDescription = medicineDto.MedicineDescription;
+                existingMedicine.Category = medicineDto.Category;
+                existingMedicine.ImageUrl = medicineDto.ImageUrl;
+
+                await _db.SaveChangesAsync();
+
+                return _mapper.Map<MedicineDto>(existingMedicine);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"An error occurred while updating the medicine with ID: {medicineDto.MedicineId}");
+                throw;
+            }
+        }
+    
+
+     
     }
-
-    public async Task<MedicineDto> GetMedicineById(int medicineid)
-    {
-        Medicine medicine = await _db.Medicines.Where(x => x.MedicineId == medicineid).FirstOrDefaultAsync();
-        return _mapper.Map<MedicineDto>(medicine);
-    }
-
-    public async Task<MedicineDto> GetMedicineByNameph(string name)
-    {
-     var medicine = await _db.Medicines.FirstOrDefaultAsync(m => m.MedicineName == name);
-     return _mapper.Map<MedicineDto>(medicine);
-    }
-
-
-  }
 }

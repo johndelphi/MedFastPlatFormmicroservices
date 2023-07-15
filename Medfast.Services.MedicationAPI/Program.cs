@@ -11,18 +11,17 @@ using Serilog.Sinks.SystemConsole.Themes;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//logger 
+// logger 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
     .Enrich.FromLogContext()
-    .WriteTo.Console(theme: AnsiConsoleTheme.Code)
+    .WriteTo.Console(theme: AnsiConsoleTheme.Code) 
     .CreateLogger();
 
 builder.Logging.AddSerilog(Log.Logger);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -31,30 +30,20 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IMedicineRepository, MedicineRepository>();
 builder.Services.AddScoped<IPharmacyRepository, PharmacyRepository>();
 
-
-
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 IMapper mapper = MappingConfig.RegisterMaps().CreateMapper();
 builder.Services.AddSingleton(mapper);
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", build =>
     {
-        
-        build.WithOrigins("http://localhost:3000", "http://localhost:59002")
+        build.WithOrigins("http://localhost:64787", "http://localhost:4200")
             .AllowAnyMethod()
             .AllowAnyHeader();
     });
 });
-
-
-//enable cors for single domain
-//multiple domain
-//
 
 var app = builder.Build();
 

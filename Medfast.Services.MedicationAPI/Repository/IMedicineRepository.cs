@@ -1,4 +1,5 @@
-﻿using Medfast.Services.MedicationAPI.Models.Dto;
+﻿using Medfast.Services.MedicationAPI.Models;
+using Medfast.Services.MedicationAPI.Models.Dto;
 namespace Medfast.Services.MedicationAPI.Repository
 {
   public interface IMedicineRepository
@@ -9,7 +10,7 @@ namespace Medfast.Services.MedicationAPI.Repository
     Task<bool> DeleteMedicine(int medicineId);
     Task<IEnumerable<MedicineDto>> GetMedicineByName(string name);
     Task<MedicineDto> GetMedicineByNameph(string name);
-
-
+    
+    Task<MedicineDto> UpdateMedicine(MedicineDto medicineDto);
   }
 }

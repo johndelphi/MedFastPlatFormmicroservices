@@ -1,4 +1,5 @@
-﻿using Medfast.Services.MedicationAPI.Models.Dto;
+﻿using Medfast.Services.MedicationAPI.Models;
+using Medfast.Services.MedicationAPI.Models.Dto;
 using Medfast.Services.MedicationAPI.Repository;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,13 +8,13 @@ namespace Medfast.Services.MedicationAPI.Controllers
   [Route("api/medicines")]
   public class MedicineApiController : ControllerBase
   {
-    protected ResponseDto  _response;
+    protected new readonly ResponseDto  Response;
     private IMedicineRepository _medicineRepository;
-
+    
     public MedicineApiController(IMedicineRepository medicineRepository)
     {
       _medicineRepository = medicineRepository;
-      this._response = new ResponseDto();
+      this.Response = new ResponseDto();
     }
 
     [HttpGet]
@@ -22,15 +23,15 @@ namespace Medfast.Services.MedicationAPI.Controllers
       try
       {
         IEnumerable<MedicineDto> medicineDtos = await _medicineRepository.GetMedicines();  
-        _response.Result = medicineDtos;
+        Response.Result = medicineDtos;
       }
       catch (Exception ex)
       {
 
-        _response.IsSuccess = false;
-        _response.ErrorMessages = new List<string>() { ex.ToString() };
+        Response.IsSuccess = false;
+        Response.ErrorMessages = new List<string>() { ex.ToString() };
       }
-      return _response; 
+      return Response; 
     }
 
     [HttpGet]
@@ -40,15 +41,15 @@ namespace Medfast.Services.MedicationAPI.Controllers
         try
         {
             MedicineDto medicineDto = await _medicineRepository.GetMedicineById(id);
-            _response.Result = medicineDto;
+            Response.Result = medicineDto;
         }
         catch (Exception ex)
         {
 
-            _response.IsSuccess = false;
-            _response.ErrorMessages = new List<string>() { ex.ToString() };
+            Response.IsSuccess = false;
+            Response.ErrorMessages = new List<string>() { ex.ToString() };
         }
-        return _response;
+        return Response;
     }
 
         [HttpGet("Search")]
@@ -58,40 +59,38 @@ namespace Medfast.Services.MedicationAPI.Controllers
             return Ok(medicines);
         }
 
-
-        [HttpPost]
-    public async Task<object> Post([FromBody] MedicineDto medicineDto)
-    {
-        try
+        [HttpPut("{medicineId}")]
+        public async Task<IActionResult> UpdateMedicine(int medicineId, [FromBody] Medicine medicine)
         {
-            MedicineDto model = await _medicineRepository.AddMedicine(medicineDto);
-            _response.Result = model;
-        }
-        catch (Exception ex)
-        {
+            try
+            {
+                if (medicineId != medicine.MedicineId)
+                {
+                    return BadRequest("Invalid medicine ID");
+                }
 
-            _response.IsSuccess = false;
-            _response.ErrorMessages = new List<string>() { ex.ToString() };
-        }
-        return _response;
-    }
+                var medicineDto = new MedicineDto
+                {
+                    MedicineId = medicine.MedicineId,
+                    MedicineName = medicine.MedicineName,
+                    MedicineDescription = medicine.MedicineDescription,
+                    Category = medicine.Category,
+                    ImageUrl = medicine.ImageUrl
+                };
 
-    [HttpPut]
-    public async Task<object> Put([FromBody] MedicineDto medicineDto)
-    {
-        try
-        {
-            MedicineDto model = await _medicineRepository.AddMedicine(medicineDto);
-            _response.Result = model;
-        }
-        catch (Exception ex)
-        {
+                var updatedMedicine = await _medicineRepository.UpdateMedicine(medicineDto);
 
-            _response.IsSuccess = false;
-            _response.ErrorMessages = new List<string>() { ex.ToString() };
+                return Ok(updatedMedicine);
+            }
+            catch (Exception ex)
+            {
+             
+                return StatusCode(500, $"An error occurred while updating: {ex.Message}");
+            }
         }
-        return _response;
-    }
+
+       
+
 
     [HttpDelete]
     public async Task<object> Delete(int id)
@@ -99,15 +98,15 @@ namespace Medfast.Services.MedicationAPI.Controllers
         try
         {
             bool isSucces = await _medicineRepository.DeleteMedicine(id);
-            _response.Result = isSucces;
+            Response.Result = isSucces;
         }
         catch (Exception ex)
         {
 
-            _response.IsSuccess = false;
-            _response.ErrorMessages = new List<string>() { ex.ToString() };
+            Response.IsSuccess = false;
+            Response.ErrorMessages = new List<string>() { ex.ToString() };
         }
-        return _response;
+        return Response;
     }
     }
 
