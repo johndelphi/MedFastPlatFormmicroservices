@@ -17,6 +17,10 @@ public class User
 
     public string Role { get; set; }
 
+    [Required]
+    public string PasswordHash { get; set; }
+    
     // Navigation property
     public List<Transaction> Transactions { get; set; }
+    
 }
