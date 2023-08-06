@@ -3,10 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33403.182
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Frontend", "Frontend", "{925A1381-55BC-4406-B298-5FE85290EB5A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Medfast.web", "Medfast.web\Medfast.web.csproj", "{07D127C2-63AC-4617-AB3C-A6012769A359}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{BF9CCF38-2399-423D-B34C-5DA42B5E01F4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Medfast.Services.MedicationAPI", "Medfast.Services.MedicationAPI\Medfast.Services.MedicationAPI.csproj", "{BCA96D11-6181-412D-9582-20553F72D638}"
@@ -17,10 +13,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{07D127C2-63AC-4617-AB3C-A6012769A359}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{07D127C2-63AC-4617-AB3C-A6012769A359}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{07D127C2-63AC-4617-AB3C-A6012769A359}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{07D127C2-63AC-4617-AB3C-A6012769A359}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BCA96D11-6181-412D-9582-20553F72D638}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BCA96D11-6181-412D-9582-20553F72D638}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BCA96D11-6181-412D-9582-20553F72D638}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -30,7 +22,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{07D127C2-63AC-4617-AB3C-A6012769A359} = {925A1381-55BC-4406-B298-5FE85290EB5A}
 		{BCA96D11-6181-412D-9582-20553F72D638} = {BF9CCF38-2399-423D-B34C-5DA42B5E01F4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
