@@ -45,7 +45,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("CorsPolicy", build =>
     {
         
-        build.WithOrigins("http://localhost:3000", "http://localhost:59002")
+        build.WithOrigins("http://localhost:4200", "http://localhost:59002", "https://medrx-5005e.firebaseapp.com")
             .AllowAnyMethod()
             .AllowAnyHeader();
     });

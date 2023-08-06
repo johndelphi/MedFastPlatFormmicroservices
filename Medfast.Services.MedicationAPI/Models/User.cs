@@ -22,5 +22,5 @@ public class User
     
     // Navigation property
     public List<Transaction> Transactions { get; set; }
-    public string PasswordHash { get; set; }
+    
 }

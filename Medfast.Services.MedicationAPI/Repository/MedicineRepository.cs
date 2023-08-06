@@ -64,23 +64,36 @@ namespace Medfast.Services.MedicationAPI.Repository
 
                 foreach (var medicineDto in medicineDtos)
                 {
-                    var pharmacyDtos = medicineDto.PharmacyMedicines
-                        .Where(pm => pm.QuantityInStock > 0)
-                        .Select(pm => new PharmacyDto
-                        {
-                            PharmacyId = pm.Pharmacy.PharmacyId,
-                            PharmacyName = pm.Pharmacy.PharmacyName,
-                            Region = pm.Pharmacy.Region,
-                            City = pm.Pharmacy.City,
-                            SubCity = pm.Pharmacy.SubCity,
-                            Landmark = pm.Pharmacy.Landmark,
-                            Latitude = pm.Pharmacy.Latitude,
-                            Longitude = pm.Pharmacy.Longitude,
-                            DistanceInKm = 0 // Set to 0 for now, but you can calculate this based on the user's location
-                        })
-                        .ToList();
+                    if (medicineDto?.PharmacyMedicines != null)
+                    {
+                        var pharmacyDtos = medicineDto.PharmacyMedicines
+                            .Where(pm => pm?.QuantityInStock > 0)
+                            .Select(pm =>
+                            {
+                                if (pm?.Pharmacy != null)
+                                {
+                                    return new PharmacyDto
+                                    {
+                                        PharmacyId = pm.Pharmacy.PharmacyId,
+                                        PharmacyName = pm.Pharmacy.PharmacyName,
+                                        // ... and so on ...
+                                    };
+                                }
+                                else
+                                {
+                                    _logger.LogError("Pharmacy is null in PharmacyMedicines");
+                                    return null; // or handle this case as appropriate
+                                }
+                            })
+                            .ToList();
 
-                    medicineDto.Pharmacies = pharmacyDtos;
+                        medicineDto.Pharmacies = pharmacyDtos;
+                    }
+                    else
+                    {
+                        _logger.LogError("PharmacyMedicines is null in medicineDto");
+                    }
+
                 }
 
                 return medicineDtos;
