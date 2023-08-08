@@ -50,7 +50,35 @@ namespace Medfast.Services.MedicationAPI.Controllers
 
             return StatusCode(StatusCodes.Status201Created);
         }
+        [HttpPost("pharmacyregistration")]
+        public async Task<IActionResult> phamacyRegistration([FromBody] UserRegistrationModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
+            // Check if a user with the same email already exists
+            if (_context.Users.Any(u => u.Email == model.Email))
+            {
+                return BadRequest("User with this email already exists.");
+            }
+
+            // Validate model and create a new User object
+            var user = new User
+            {
+                UserId = Guid.NewGuid(),
+                Email = model.Email,
+                PasswordHash = HashPassword(model.Password) // Implement password hashing
+            };
+
+            // Save the new user to the database
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            return StatusCode(StatusCodes.Status201Created);
+        }
+        
         private string HashPassword(string password)
         {
             return BCrypt.Net.BCrypt.HashPassword(password);
