@@ -4,10 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Medfast.Services.MedicationAPI.Models;
 using Medfast.Services.MedicationAPI.DbContexts;
 using Medfast.Services.MedicationAPI.Models.Dto.InventoryDto;
+using Medfast.Services.MedicationAPI.Models.Dto.CreatePharmacyDto;
 
 namespace Medfast.Services.MedicationAPI.Repository.PharmacyRepository;
 
-public class PharmacyRepository: IPharmacyRepository
+public class PharmacyRepository : IPharmacyRepository
 {
     private readonly  ApplicationDbContext _dbContext;
     private readonly IMapper _mapper;
@@ -42,6 +43,47 @@ public class PharmacyRepository: IPharmacyRepository
 
         await _dbContext.SaveChangesAsync();
     }
+    //public async Task<(Pharmacy Pharmacy, User AdminUser, string ErrorMessage)> CreatePharmacyWithAdmin(Pharmacy pharmacy, User adminUser)
+    //{
+    //    using var transaction = _dbContext.Database.BeginTransaction();
+
+    //    try
+    //    {
+    //        // Check for an existing pharmacy with the same name and/or phone number
+    //        var existingPharmacy = await _dbContext.Pharmacies
+    //            .AnyAsync(p => p.PhoneNumber == pharmacy.PhoneNumber);
+    //        if (existingPharmacy)
+    //        {
+    //            return (null, null, "A pharmacy with the same phone number already exists.");
+    //        }
+
+    //        // Add the pharmacy to the DbContext
+    //        _dbContext.Pharmacies.Add(pharmacy);
+    //        await _dbContext.SaveChangesAsync();
+
+    //        // Assign the newly created pharmacy ID to the admin user and add the user to the DbContext
+    //        adminUser.PharmacyId = pharmacy.PharmacyId;
+    //        _dbContext.Users.Add(adminUser);
+    //        await _dbContext.SaveChangesAsync();
+
+    //        // Commit the transaction
+    //        await transaction.CommitAsync();
+
+    //        return (pharmacy, adminUser, null);
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        // Rollback the transaction if any exception occurs
+    //        await transaction.RollbackAsync();
+    //        return (null, null, $"An error occurred while creating the pharmacy and admin user: {ex.Message}");
+    //    }
+    //}
+    public async Task CreateAdminUser(User adminUser)
+    {
+     //   _dbContext.Users.Add(adminUser);
+        await _dbContext.SaveChangesAsync();
+    }
+
 
     public async Task<Pharmacy> GetPharmacyById(int pharmacyId)
     {
@@ -97,12 +139,51 @@ public class PharmacyRepository: IPharmacyRepository
             .Include(pm => pm.Medicine)
             .FirstOrDefaultAsync(pm => pm.PharmacyId == pharmacyId && pm.Medicine.MedicineName == medicineName);
     }
+
     
+
     #endregion
     public async Task<bool> SaveChanges()
     {
         return (await _dbContext.SaveChangesAsync()) > 0;
     }
-    
+
+    async Task<(Pharmacy Pharmacy, User AdminUser, string ErrorMessage)> IPharmacyRepository.CreatePharmacyWithAdmin(Pharmacy pharmacy, User adminUser)
+    {
+        using var transaction = _dbContext.Database.BeginTransaction();
+
+        try
+        {
+            // Check for an existing pharmacy with the same name and/or phone number
+            var existingPharmacy = await _dbContext.Pharmacies
+                .AnyAsync(p => p.PhoneNumber == pharmacy.PhoneNumber);
+            if (existingPharmacy)
+            {
+                return (null, null, "A pharmacy with the same phone number already exists.");
+            }
+
+            // Add the pharmacy to the DbContext
+            _dbContext.Pharmacies.Add(pharmacy);
+            await _dbContext.SaveChangesAsync();
+
+            // Assign the newly created pharmacy ID to the admin user and add the user to the DbContext
+            adminUser.PharmacyId = pharmacy.PharmacyId;
+           // _dbContext.Users.Add(adminUser);
+            await _dbContext.SaveChangesAsync();
+
+            // Commit the transaction
+            await transaction.CommitAsync();
+
+            return (pharmacy, adminUser, null);
+        }
+        catch (Exception ex)
+        {
+            // Rollback the transaction if any exception occurs
+            await transaction.RollbackAsync();
+            // Log the exception here as needed
+            return (null, null, $"An error occurred while creating the pharmacy and admin user: {ex.Message}");
+        }
+    }
+
     
 }
