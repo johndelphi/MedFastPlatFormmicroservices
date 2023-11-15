@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using BCrypt;
+using Microsoft.AspNetCore.Identity;
+using Medfast.Services.MedicationAPI.Models.Dto;
 
 namespace Medfast.Services.MedicationAPI.Controllers
 {
@@ -16,10 +18,12 @@ namespace Medfast.Services.MedicationAPI.Controllers
     public class AccountController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public AccountController(ApplicationDbContext context)
+        public AccountController(ApplicationDbContext context, UserManager<ApplicationUser> usermanager)
         {
             _context = context;
+            _userManager = usermanager;
         }
 
         [HttpPost("register")]
@@ -30,32 +34,56 @@ namespace Medfast.Services.MedicationAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Check if a user with the same email already exists
-            if (_context.Users.Any(u => u.Email == model.Email))
+            var existingUser = await _userManager.FindByEmailAsync(model.Email);
+            if (existingUser != null)
             {
-                return BadRequest("User with this email already exists.");
+                return Conflict("User with this email already exists.");
             }
 
-            // Validate model and create a new User object
-            var user = new User
+            var user = new ApplicationUser
             {
-                UserId = Guid.NewGuid(),
+               
                 Email = model.Email,
-                PasswordHash = HashPassword(model.Password) // Implement password hashing
+                 UserName = model.username,
+              
             };
 
-            // Save the new user to the database
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            var result = await _userManager.CreateAsync(user, model.Password);
 
-            return StatusCode(StatusCodes.Status201Created);
+           
+
+            if (result.Succeeded)
+            {
+                return StatusCode(StatusCodes.Status201Created);
+            }
+
+          
+            var errorMessages = result.Errors.Select(e => e.Description).ToList();
+            return BadRequest(new { Errors = errorMessages });
+
+
+
+
         }
 
-        private string HashPassword(string password)
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(UserLoginDto model)
         {
-            return BCrypt.Net.BCrypt.HashPassword(password);
-        }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-        // Add other authentication methods here (e.g., login, reset password, etc.)
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
+            {
+                return Unauthorized("Invalid email or password.");
+            }
+
+            
+            return Ok(new { Message = "Login successful!" });
+        }
     }
 }

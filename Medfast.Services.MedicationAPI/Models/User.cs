@@ -1,26 +1,32 @@
+using Microsoft.AspNetCore.Identity;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Medfast.Services.MedicationAPI.Models;
-
-public class User
+namespace Medfast.Services.MedicationAPI.Models
 {
-    [Key]
-    public Guid UserId { get; set; }
+    public class User : IdentityUser<Guid>
+    {
+        [Required]
+        [MaxLength(50)]
+        public override string UserName { get; set; }
 
-    [Required]
-    [MaxLength(50)]
-    public string Username { get; set; }
+        [Required]
+        [MaxLength(50)]
+        public override string Email { get; set; }
 
-    [Required]
-    [MaxLength(50)]
-    public string Email { get; set; }
+        public string Role { get; set; }
 
-    public string Role { get; set; }
+        [Required]
+        public string PasswordHash { get; set; }
 
-    [Required]
-    public string PasswordHash { get; set; }
-    
-    // Navigation property
-    public List<Transaction> Transactions { get; set; }
-    
+        [ForeignKey("Pharmacy")]
+        public int PharmacyId { get; set; }
+
+        public virtual Pharmacy Pharmacy { get; set; }
+
+        // Navigation property
+        public List<Transaction> Transactions { get; set; }
+    }
 }

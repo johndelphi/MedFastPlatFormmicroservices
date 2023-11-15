@@ -13,9 +13,8 @@ using Medfast.Services.MedicationAPI.Repository;
 namespace Medfast.Services.MedicationAPI.Controllers;
 
 
-    [ApiController]
-        [Route("api/[controller]")]
-        public class PharmacyController : ControllerBase
+[Route("api/Pharmacies")]
+public class PharmacyController : ControllerBase
         {
             private readonly IMapper _mapper;
             private readonly IPharmacyRepository _pharmacyRepository;
@@ -27,42 +26,61 @@ namespace Medfast.Services.MedicationAPI.Controllers;
                 _pharmacyRepository = pharmacyRepository;
                 _medicineRepository = medicineRepository;
             }
-         
-            [HttpPost]
-            public async Task<IActionResult> CreatePharmacy(PharmacyAccountCreateDto pharmacyForCreationDto)
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
 
-                // Check if a pharmacy with the same name and phone number already exists
-                var existingPharmacy = await _pharmacyRepository.GetPharmacyByNameAndPhoneNumber(pharmacyForCreationDto.PharmacyName, pharmacyForCreationDto.PhoneNumber);
+    [HttpPost]
+    public async Task<IActionResult> CreatePharmacy(PharmacyAccountCreateDto pharmacyForCreationDto)
+    {
 
-                if (existingPharmacy != null)
-                {
-                    // A pharmacy with the same name and phone number already exists
-                    return Conflict("A pharmacy with the same name and phone number already exists.");
-                }
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
 
-                var pharmacy = new Pharmacy
-                {
-                    PharmacyName = pharmacyForCreationDto.PharmacyName,
-                    Region = pharmacyForCreationDto.Region,
-                    City = pharmacyForCreationDto.City,
-                    SubCity = pharmacyForCreationDto.SubCity,
-                    Landmark = pharmacyForCreationDto.Landmark,
-                    PhoneNumber = pharmacyForCreationDto.PhoneNumber,
-                    Latitude = pharmacyForCreationDto.Latitude,
-                    Longitude = pharmacyForCreationDto.Longitude
-                };
-
-                await _pharmacyRepository.CreatePharmacy(pharmacy);
-
-                return Ok();
-            }
+        // Check if a pharmacy with the same name and phone number already exists
+        var existingPharmacy = await _pharmacyRepository.GetPharmacyByNameAndPhoneNumber(pharmacyForCreationDto.PharmacyName, pharmacyForCreationDto.PhoneNumber);
+        if (existingPharmacy != null)
+        {
             
-            [HttpPost("pharmacies/{pharmacyId}/medicines")]
+            return Conflict("A pharmacy with the same name and phone number already exists.");
+        }
+
+        var pharmacy = _mapper.Map<Pharmacy>(pharmacyForCreationDto);
+        await _pharmacyRepository.CreatePharmacy(pharmacy);
+
+        return Ok(new { PharmacyId = pharmacy.PharmacyId, PharmacyName = pharmacy.PharmacyName }
+        );
+    }
+    [HttpPost("CreateWithAdmin")]
+    public async Task<IActionResult> CreatePharmacyWithAdmin([FromBody] PharmacyAdminCreateDto pharmacyAdminCreateDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var pharmacy = await _pharmacyRepository.GetPharmacyById(pharmacyAdminCreateDto.PharmacyId);
+        if (pharmacy == null)
+        {
+            return NotFound("Pharmacy not found.");
+        }
+
+        var adminUser = new User
+        {
+            //Username = pharmacyAdminCreateDto.AdminEmail,
+            Email = pharmacyAdminCreateDto.AdminEmail,
+            PasswordHash = pharmacyAdminCreateDto.AdminPassword, // Ensure this is hashed
+            Role = "Admin",
+            PharmacyId = pharmacy.PharmacyId
+        };
+
+        await _pharmacyRepository.CreateAdminUser(adminUser);
+
+        return Ok(new { AdminUserId = adminUser.UserName });
+    }
+
+    
+    
+    [HttpPost("pharmacies/{pharmacyId}/medicines")]
             public async Task<IActionResult> AddMedicineToInventory(int pharmacyId, PharmacyMedicineCreateDto pharmacyMedicineCreateDto)
             {
                 if (!ModelState.IsValid)
@@ -106,10 +124,21 @@ namespace Medfast.Services.MedicationAPI.Controllers;
                 return CreatedAtRoute("GetPharmacyMedicineById", new { pharmacyId = pharmacyMedicine.PharmacyId, medicineId = pharmacyMedicine.MedicineId }, pharmacyMedicine);
             }
 
-            
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetPharmacyById(int id)
+    {
+        var pharmacy = await _pharmacyRepository.GetPharmacyById(id);
+
+        if (pharmacy == null)
+        {
+            return NotFound($"Pharmacy with ID {id} not found.");
+        }
+
+        var pharmacyDto = _mapper.Map<PharmacyDto>(pharmacy);
+
+        return Ok(pharmacyDto);
+    }
 
 
+}
 
-          
-           }
-                   

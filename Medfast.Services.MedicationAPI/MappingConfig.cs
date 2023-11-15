@@ -15,7 +15,7 @@ namespace Medfast.Services.MedicationAPI
                 config.CreateMap<Medicine, MedicineDto>()
                     .ForMember(dest => dest.PharmacyMedicines, opt => opt.MapFrom(src => src.PharmacyMedicines.Select(pm => new PharmacyMedicineDto 
                     { 
-                        PharmacyId = pm.PharmacyId, 
+                        PharmacyId =pm.PharmacyId, 
                         Price = pm.Price, 
                         MedicineDiscount = pm.MedicineDiscount,
                         QuantityInStock = pm.QuantityInStock
