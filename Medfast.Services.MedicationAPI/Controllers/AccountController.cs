@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using BCrypt;
 using Microsoft.AspNetCore.Identity;
 using Medfast.Services.MedicationAPI.Models.Dto;
+using Medfast.Services.MedicationAPI.Utility;
 
 namespace Medfast.Services.MedicationAPI.Controllers
 {
@@ -19,11 +20,14 @@ namespace Medfast.Services.MedicationAPI.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly JwtService _jwtService;
 
-        public AccountController(ApplicationDbContext context, UserManager<ApplicationUser> usermanager)
+        public AccountController(ApplicationDbContext context, UserManager<ApplicationUser> usermanager, JwtService jwtService)
         {
             _context = context;
             _userManager = usermanager;
+            _jwtService = jwtService;
+
         }
 
         [HttpPost("register")]
@@ -82,8 +86,15 @@ namespace Medfast.Services.MedicationAPI.Controllers
                 return Unauthorized("Invalid email or password.");
             }
 
-            
-            return Ok(new { Message = "Login successful!" });
+            // Generate JWT token
+            var token = _jwtService.GenerateToken(user.Email);
+
+            // You might want to return additional information about the user if needed
+            return Ok(new { Token = token });
         }
+
+
+
+
     }
-}
+    }

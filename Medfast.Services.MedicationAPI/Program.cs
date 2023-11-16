@@ -4,6 +4,7 @@ using Medfast.Services.MedicationAPI.DbContexts;
 using Medfast.Services.MedicationAPI.Models;
 using Medfast.Services.MedicationAPI.Repository;
 using Medfast.Services.MedicationAPI.Repository.PharmacyRepository;
+using Medfast.Services.MedicationAPI.Utility;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
@@ -33,6 +34,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IMedicineRepository, MedicineRepository>();
 builder.Services.AddScoped<IPharmacyRepository, PharmacyRepository>();
+builder.Services.AddSingleton<JwtService>(new JwtService(builder.Configuration["JwtSecretKey"]));
 
 
 
