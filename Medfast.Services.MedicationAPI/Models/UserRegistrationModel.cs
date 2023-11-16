@@ -16,8 +16,11 @@ namespace Medfast.Services.MedicationAPI.Models
         public string username { get; set; }
 
 
-        //[Required]
-        //public int PharmacyId { get; set; }
+        public string PhoneNumber { get; set; }
+
+
+        [Required]
+        public int PharmacyId { get; set; }
 
         //[Required]
         //public string Role { get; set; }

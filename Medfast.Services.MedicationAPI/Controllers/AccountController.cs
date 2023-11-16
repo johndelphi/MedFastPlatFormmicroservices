@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Medfast.Services.MedicationAPI.DbContexts;
 using Medfast.Services.MedicationAPI.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
-using BCrypt;
-using Microsoft.AspNetCore.Identity;
 using Medfast.Services.MedicationAPI.Models.Dto;
+using Medfast.Services.MedicationAPI.Repository.PharmacyRepository;
 using Medfast.Services.MedicationAPI.Utility;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Medfast.Services.MedicationAPI.Controllers
 {
@@ -21,13 +18,15 @@ namespace Medfast.Services.MedicationAPI.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly JwtService _jwtService;
+        private readonly IPharmacyRepository _pharmacyRepository;
 
-        public AccountController(ApplicationDbContext context, UserManager<ApplicationUser> usermanager, JwtService jwtService)
+        public AccountController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, JwtService jwtService,
+            IPharmacyRepository pharmacyRepository)
         {
-            _context = context;
-            _userManager = usermanager;
-            _jwtService = jwtService;
-
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            _jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
+            _pharmacyRepository = pharmacyRepository ?? throw new ArgumentNullException(nameof(pharmacyRepository));
         }
 
         [HttpPost("register")]
@@ -44,32 +43,32 @@ namespace Medfast.Services.MedicationAPI.Controllers
                 return Conflict("User with this email already exists.");
             }
 
+            var pharmacy = await _pharmacyRepository.GetPharmacyById(model.PharmacyId);
+            if (pharmacy == null)
+            {
+                return BadRequest("Invalid pharmacy ID.");
+            }
+
             var user = new ApplicationUser
             {
-               
                 Email = model.Email,
-                 UserName = model.username,
-              
+                UserName = model.username,
+                PhoneNumber = model.PhoneNumber,
+                PharmacyId = pharmacy.PharmacyId,
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
 
-           
-
             if (result.Succeeded)
             {
-                return StatusCode(StatusCodes.Status201Created);
+                // Generate JWT token
+                var token = _jwtService.GenerateToken(user.Email);
+                return Ok(new { Token = token });
             }
 
-          
             var errorMessages = result.Errors.Select(e => e.Description).ToList();
             return BadRequest(new { Errors = errorMessages });
-
-
-
-
         }
-
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserLoginDto model)
@@ -86,15 +85,8 @@ namespace Medfast.Services.MedicationAPI.Controllers
                 return Unauthorized("Invalid email or password.");
             }
 
-            // Generate JWT token
             var token = _jwtService.GenerateToken(user.Email);
-
-            // You might want to return additional information about the user if needed
             return Ok(new { Token = token });
         }
-
-
-
-
     }
-    }
+}
