@@ -6,7 +6,8 @@ namespace Medfast.Services.MedicationAPI.Models
 {
     public class ApplicationUser : IdentityUser
     {
-        
+        public int? PharmacyId { get; set; }
+        public Pharmacy Pharmacy { get; set; }
     }
 }
 
