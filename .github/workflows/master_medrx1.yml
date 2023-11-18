@@ -27,19 +27,16 @@ jobs:
           echo "ConnectionStrings__DefaultConnection=${{ secrets.DEFAULTCONNECTION }}" >> $GITHUB_ENV
           echo "JwtSettings__SecretKey=${{ secrets.JWTSECRETKEY }}" >> $GITHUB_ENV
           echo "DOTNET_ROOT=${{ runner.toolcache-path }}/dotnet" >> $GITHUB_ENV
-
       - name: Debug Environment Variables
         run: |
           echo "Connection String: ${{ secrets.DEFAULTCONNECTION }}"
           echo "Secret Key: ${{ secrets.JWTSECRETKEY }}"
           echo "DOTNET_ROOT: ${{ runner.toolcache-path }}/dotnet"
-
       - name: Print Secrets for Verification
         run: |
           echo "Connection String: ${{ secrets.DEFAULTCONNECTION }}"
           echo "Secret Key: ${{ secrets.JWTSECRETKEY }}"
           echo "DOTNET_ROOT: ${{ runner.toolcache-path }}/dotnet"
-
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
@@ -57,7 +54,7 @@ jobs:
     needs: build
     environment:
       name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+      url: ${{ needs.build.outputs.webapp-url }}
 
     steps:
       - name: Download artifact from build job
@@ -72,4 +69,4 @@ jobs:
           app-name: 'Medrxapi'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DE94F9B07B06446EA400FF616C3CB384 }}
-          package: .
+          package: .net-app
