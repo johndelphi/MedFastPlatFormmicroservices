@@ -64,3 +64,4 @@ jobs:
 env:
   ConnectionStrings__DefaultConnection: ${{ secrets.DEFAULTCONNECTION }}
   JwtSettings__SecretKey: ${{ secrets.JWTSECRETKEY }}
+  DOTNET_ROOT: C:\Users\runneradmin\AppData\Local\Microsoft\dotnet
