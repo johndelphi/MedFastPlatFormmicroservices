@@ -1,4 +1,4 @@
-name: Build and deploy ASP.Net Core app to Azure Web App - medRx1
+name: Build and deploy ASP.Net Core app to Azure Web App - Medrxapi
 
 on:
   push:
@@ -11,7 +11,8 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v1
@@ -21,8 +22,13 @@ jobs:
 
       - name: Set up environment variables
         run: |
-          echo "ConnectionStrings__DefaultConnection=${{ secrets.DEFAULTCONNECTION }}" >> $GITHUB_ENV
-          echo "JwtSettings__SecretKey=${{ secrets.JWTSECRETKEY }}" >> $GITHUB_ENV
+          echo "ConnectionStrings__DefaultConnection='${{ secrets.DEFAULTCONNECTION }}'" >> $GITHUB_ENV
+          echo "JwtSettings__SecretKey='${{ secrets.JWTSECRETKEY }}'" >> $GITHUB_ENV
+
+      - name: Debug Environment Variables
+        run: |
+          echo "Connection String: $ConnectionStrings__DefaultConnection"
+          echo "Secret Key: $JwtSettings__SecretKey"
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
@@ -53,7 +59,8 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'medRx1'
+          app-name: 'Medrxapi'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_208AF19D8B6B4D92AB9891196921B893 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DE94F9B07B06446EA400FF616C3CB384 }}
           package: .
+
