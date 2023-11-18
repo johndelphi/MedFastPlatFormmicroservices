@@ -58,13 +58,12 @@ jobs:
         run: |
           Get-ChildItem -Recurse -Force
 
-      # Commenting out the cd command for now
-      #- name: Run Entity Framework Migrations
-      #  run: |
-      #    cd MedFastPlatFormmicroservices/Medfast.Services.MedicationAPI
-      #    dotnet ef database update --verbose
-      #  env:
-      #    CONNECTION_STRING: "Server=tcp:medrxsqlserver.database.windows.net,1433;Initial Catalog=medrxdevdb;Persist Security Info=False;User ID=medrxdb;Password=save101#;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30"
+      - name: Run Entity Framework Migrations
+        run: |
+          cd MedFastPlatFormmicroservices/Medfast.Services.MedicationAPI
+          dotnet ef database update --verbose
+        env:
+          CONNECTION_STRING: "Server=tcp:medrxsqlserver.database.windows.net,1433;Initial Catalog=medrxdevdb;Persist Security Info=False;User ID=medrxdb;Password=save101#;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30"
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -74,3 +73,4 @@ jobs:
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_208AF19D8B6B4D92AB9891196921B893 }}
           package: .
+
