@@ -35,9 +35,26 @@ jobs:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
 
-  deploy:
+  migrate:
     runs-on: windows-latest
     needs: build
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v2
+        with:
+          name: .net-app
+
+      - name: Run Entity Framework Migrations
+        run: |
+          cd MedFastPlatFormmicroservices/Medfast.Services.MedicationAPI
+          dotnet ef database update --verbose
+        env:
+          CONNECTION_STRING: "Server=tcp:medrxsqlserver.database.windows.net,1433;Initial Catalog=medrxdevdb;Persist Security Info=False;User ID=medrxdb;Password=save101#;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30"
+
+  deploy:
+    runs-on: windows-latest
+    needs: migrate
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
@@ -47,10 +64,6 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: .net-app
-
-      - name: Print Current Directory
-        run: |
-          pwd
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
