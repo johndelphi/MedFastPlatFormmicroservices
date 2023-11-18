@@ -48,12 +48,9 @@ jobs:
         with:
           name: .net-app
 
-      - name: Run Entity Framework Migrations
+      - name: Print Current Directory
         run: |
-          cd MedFastPlatFormmicroservices\Medfast.Services.MedicationAPI
-          dotnet ef database update --verbose
-        env:
-          CONNECTION_STRING: "Server=tcp:medrxsqlserver.database.windows.net,1433;Initial Catalog=medrxdevdb;Persist Security Info=False;User ID=medrxdb;Password=save101#;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30:"
+          pwd
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
