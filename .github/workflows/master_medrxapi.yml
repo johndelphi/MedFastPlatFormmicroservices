@@ -60,8 +60,8 @@ jobs:
 
       - name: Run Entity Framework Migrations
         run: |
-          cd D:\a\MedFastPlatFormmicroservices\MedFastPlatFormmicroservices
-          dotnet ef database update --verbose
+         dotnet ef database update --verbose --project D:\a\MedFastPlatFormmicroservices\MedFastPlatFormmicroservices\Medfast.Services.MedicationAPI
+         
         env:
           CONNECTION_STRING: "Server=tcp:medrxsqlserver.database.windows.net,1433;Initial Catalog=medrxdevdb;Persist Security Info=False;User ID=medrxdb;Password=save101#;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30"
 
