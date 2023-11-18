@@ -10,43 +10,56 @@ namespace Medfast.Services.MedicationAPI.Utility
     {
         private readonly string _secretKey;
         private IEnumerable<ClaimsIdentity?> roles;
+        private readonly IConfiguration _configuration;
 
-        public JwtService(string secretKey)
+        public JwtService(IConfiguration configuration)
         {
-            _secretKey = secretKey;
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration), "Configuration cannot be null.");
+            _secretKey = _configuration["JwtSettings:SecretKey"];
         }
-        public string GenerateToken(string email, params string[] roles)
+        public string GenerateToken(string email,  params string[] roles)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
+            
+                if (email == null)
+                {
+                   
+                    throw new ArgumentNullException(nameof(email), "Email cannot be null.");
+                }
 
-            // Choose a suitable algorithm based on your key size
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+                var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
 
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Email, email),
-            };
+                // Choose a suitable algorithm based on your key size
+                var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            // Add role claims if roles are provided
-            if (roles != null && roles.Any())
-            {
-                claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Email, email),
+                 
+                };
+
+                // Add role claims if roles are provided
+                if (roles != null && roles.Any())
+                {
+                    claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+                }
+
+                var token = new JwtSecurityToken(
+                    issuer: _configuration["JwtSettings:Issuer"],
+                    audience: _configuration["JwtSettings:Audience"],
+                    claims: claims,
+                    expires: DateTime.UtcNow.AddDays(1),
+                    signingCredentials: credentials
+                );
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                return tokenHandler.WriteToken(token);
             }
+            
 
-            var token = new JwtSecurityToken(
-                issuer: "YourIssuerHere",
-                audience: "YourAudienceHere",
-                claims: claims,
-                expires: DateTime.UtcNow.AddDays(1), 
-                signingCredentials: credentials
-            );
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            return tokenHandler.WriteToken(token);
+            
         }
-
 
     }
 
-}
+
 

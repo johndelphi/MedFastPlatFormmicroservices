@@ -34,7 +34,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IMedicineRepository, MedicineRepository>();
 builder.Services.AddScoped<IPharmacyRepository, PharmacyRepository>();
-builder.Services.AddSingleton<JwtService>(new JwtService(builder.Configuration["JwtSecretKey"]));
+builder.Services.AddSingleton<JwtService>();
 
 
 
