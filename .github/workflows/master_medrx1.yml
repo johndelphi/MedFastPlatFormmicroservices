@@ -1,3 +1,6 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
 name: Build and deploy ASP.Net Core app to Azure Web App - Medrxapi
 
 on:
@@ -11,8 +14,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v1
@@ -22,13 +24,16 @@ jobs:
 
       - name: Set up environment variables
         run: |
-          echo "ConnectionStrings__DefaultConnection='${{ secrets.DEFAULTCONNECTION }}'" >> $GITHUB_ENV
-          echo "JwtSettings__SecretKey='${{ secrets.JWTSECRETKEY }}'" >> $GITHUB_ENV
+          echo "ConnectionStrings__DefaultConnection=${{ secrets.DEFAULTCONNECTION }}" >> $GITHUB_ENV
+          echo "JwtSettings__SecretKey=${{ secrets.JWTSECRETKEY }}" >> $GITHUB_ENV
+          echo "DOTNET_ROOT=${{ runner.toolcache-path }}/dotnet" >> $GITHUB_ENV
 
       - name: Debug Environment Variables
         run: |
-          echo "Connection String: $ConnectionStrings__DefaultConnection"
-          echo "Secret Key: $JwtSettings__SecretKey"
+          echo "Connection String: ${{ secrets.DEFAULTCONNECTION }}"
+          echo "Secret Key: ${{ secrets.JWTSECRETKEY }}"
+          echo "DOTNET_ROOT: ${{ runner.toolcache-path }}/dotnet"
+        shell: bash
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
