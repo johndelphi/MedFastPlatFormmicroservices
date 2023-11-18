@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Medfast.Services.MedicationAPI.DbContexts;
 using Medfast.Services.MedicationAPI.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Medfast.Services.MedicationAPI.Models.Dto;
+using Medfast.Services.MedicationAPI.Repository.PharmacyRepository;
+using Medfast.Services.MedicationAPI.Utility;
 using Microsoft.AspNetCore.Http;
-using BCrypt;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Medfast.Services.MedicationAPI.Controllers
 {
@@ -16,10 +16,17 @@ namespace Medfast.Services.MedicationAPI.Controllers
     public class AccountController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly JwtService _jwtService;
+        private readonly IPharmacyRepository _pharmacyRepository;
 
-        public AccountController(ApplicationDbContext context)
+        public AccountController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, JwtService jwtService,
+            IPharmacyRepository pharmacyRepository)
         {
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            _jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
+            _pharmacyRepository = pharmacyRepository ?? throw new ArgumentNullException(nameof(pharmacyRepository));
         }
 
         [HttpPost("register")]
@@ -30,60 +37,56 @@ namespace Medfast.Services.MedicationAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Check if a user with the same email already exists
-            if (_context.Users.Any(u => u.Email == model.Email))
+            var existingUser = await _userManager.FindByEmailAsync(model.Email);
+            if (existingUser != null)
             {
-                return BadRequest("User with this email already exists.");
+                return Conflict("User with this email already exists.");
             }
 
-            // Validate model and create a new User object
-            var user = new User
+            var pharmacy = await _pharmacyRepository.GetPharmacyById(model.PharmacyId);
+            if (pharmacy == null)
             {
-                UserId = Guid.NewGuid(),
+                return BadRequest("Invalid pharmacy ID.");
+            }
+
+            var user = new ApplicationUser
+            {
                 Email = model.Email,
-                PasswordHash = HashPassword(model.Password) // Implement password hashing
+                UserName = model.username,
+                PhoneNumber = model.PhoneNumber,
+                PharmacyId = pharmacy.PharmacyId,
             };
 
-            // Save the new user to the database
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            var result = await _userManager.CreateAsync(user, model.Password);
 
-            return StatusCode(StatusCodes.Status201Created);
+            if (result.Succeeded)
+            {
+                // Generate JWT token
+                var token = _jwtService.GenerateToken(user.Email);
+                return Ok(new { Token = token });
+            }
+
+            var errorMessages = result.Errors.Select(e => e.Description).ToList();
+            return BadRequest(new { Errors = errorMessages });
         }
-        [HttpPost("pharmacyregistration")]
-        public async Task<IActionResult> phamacyRegistration([FromBody] UserRegistrationModel model)
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(UserLoginDto model)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            // Check if a user with the same email already exists
-            if (_context.Users.Any(u => u.Email == model.Email))
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                return BadRequest("User with this email already exists.");
+                return Unauthorized("Invalid email or password.");
             }
 
-            // Validate model and create a new User object
-            var user = new User
-            {
-                UserId = Guid.NewGuid(),
-                Email = model.Email,
-                PasswordHash = HashPassword(model.Password) // Implement password hashing
-            };
-
-            // Save the new user to the database
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            return StatusCode(StatusCodes.Status201Created);
+            var token = _jwtService.GenerateToken(user.Email);
+            return Ok(new { Token = token });
         }
-        
-        private string HashPassword(string password)
-        {
-            return BCrypt.Net.BCrypt.HashPassword(password);
-        }
-
-        // Add other authentication methods here (e.g., login, reset password, etc.)
     }
 }

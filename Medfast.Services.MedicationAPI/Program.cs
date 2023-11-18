@@ -1,13 +1,17 @@
 using AutoMapper;
 using Medfast.Services.MedicationAPI;
 using Medfast.Services.MedicationAPI.DbContexts;
+using Medfast.Services.MedicationAPI.Models;
 using Medfast.Services.MedicationAPI.Repository;
 using Medfast.Services.MedicationAPI.Repository.PharmacyRepository;
+using Medfast.Services.MedicationAPI.Utility;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Identity;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
+using IdentityRole = Microsoft.AspNetCore.Identity.IdentityRole;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +34,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IMedicineRepository, MedicineRepository>();
 builder.Services.AddScoped<IPharmacyRepository, PharmacyRepository>();
+builder.Services.AddSingleton<JwtService>();
 
 
 
@@ -38,6 +43,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 IMapper mapper = MappingConfig.RegisterMaps().CreateMapper();
 builder.Services.AddSingleton(mapper);
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
 
 
 builder.Services.AddCors(options =>

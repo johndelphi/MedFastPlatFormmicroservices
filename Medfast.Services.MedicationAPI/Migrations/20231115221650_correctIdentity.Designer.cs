@@ -4,6 +4,7 @@ using Medfast.Services.MedicationAPI.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Medfast.Services.MedicationAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231115221650_correctIdentity")]
+    partial class correctIdentity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -58,9 +61,6 @@ namespace Medfast.Services.MedicationAPI.Migrations
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("PharmacyId")
-                        .HasColumnType("int");
-
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
@@ -86,10 +86,6 @@ namespace Medfast.Services.MedicationAPI.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
-
-                    b.HasIndex("PharmacyId")
-                        .IsUnique()
-                        .HasFilter("[PharmacyId] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -151,9 +147,6 @@ namespace Medfast.Services.MedicationAPI.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PharmacyId"));
-
-                    b.Property<int?>("ApplicationUserPharmacyId")
-                        .HasColumnType("int");
 
                     b.Property<string>("City")
                         .IsRequired()
@@ -457,15 +450,6 @@ namespace Medfast.Services.MedicationAPI.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Medfast.Services.MedicationAPI.Models.ApplicationUser", b =>
-                {
-                    b.HasOne("Medfast.Services.MedicationAPI.Models.Pharmacy", "Pharmacy")
-                        .WithOne("ApplicationUser")
-                        .HasForeignKey("Medfast.Services.MedicationAPI.Models.ApplicationUser", "PharmacyId");
-
-                    b.Navigation("Pharmacy");
-                });
-
             modelBuilder.Entity("Medfast.Services.MedicationAPI.Models.PharmacyMedicine", b =>
                 {
                     b.HasOne("Medfast.Services.MedicationAPI.Models.Medicine", "Medicine")
@@ -573,9 +557,6 @@ namespace Medfast.Services.MedicationAPI.Migrations
 
             modelBuilder.Entity("Medfast.Services.MedicationAPI.Models.Pharmacy", b =>
                 {
-                    b.Navigation("ApplicationUser")
-                        .IsRequired();
-
                     b.Navigation("PharmacyMedicines");
                 });
 

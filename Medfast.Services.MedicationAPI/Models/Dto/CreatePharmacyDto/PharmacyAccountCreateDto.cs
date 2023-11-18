@@ -29,5 +29,7 @@ namespace Medfast.Services.MedicationAPI.Models.Dto.CreatePharmacyDto;
 
         [Required(ErrorMessage = "Longitude is required.")]
         public double Longitude { get; set; }
-    }
+        public string? AdminEmail { get; internal set; }
+        public string? AdminPassword { get; internal set; }
+}
            
