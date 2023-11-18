@@ -22,6 +22,11 @@ jobs:
           dotnet-version: '6.0.x'
           include-prerelease: true
 
+      - name: Set up environment variables
+        run: |
+          echo "ConnectionStrings__DefaultConnection=${{ secrets.DEFAULTCONNECTION }}" >> $GITHUB_ENV
+          echo "JwtSettings__SecretKey=${{ secrets.JWTSECRETKEY }}" >> $GITHUB_ENV
+
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
@@ -55,3 +60,7 @@ jobs:
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DE94F9B07B06446EA400FF616C3CB384 }}
           package: .
+
+env:
+  ConnectionStrings__DefaultConnection: ${{ secrets.DEFAULTCONNECTION }}
+  JwtSettings__SecretKey: ${{ secrets.JWTSECRETKEY }}
