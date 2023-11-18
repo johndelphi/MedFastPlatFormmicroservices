@@ -35,6 +35,13 @@ jobs:
           echo "DOTNET_ROOT: ${{ runner.toolcache-path }}/dotnet"
         shell: bash
 
+      - name: Print Secrets for Verification
+        run: |
+          echo "Connection String: ${{ secrets.DEFAULTCONNECTION }}"
+          echo "Secret Key: ${{ secrets.JWTSECRETKEY }}"
+          echo "DOTNET_ROOT: ${{ runner.toolcache-path }}/dotnet"
+        shell: bash
+
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
