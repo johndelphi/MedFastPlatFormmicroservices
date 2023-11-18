@@ -35,41 +35,9 @@ jobs:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
 
-  list-directory:
-    runs-on: windows-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Print Repository Contents
-        run: |
-          Get-ChildItem -Recurse -Force
-
-  migrate:
-    runs-on: windows-latest
-    needs: build
-
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v2
-        with:
-          name: .net-app
-
-      - name: Print Current Directory Contents
-        run: |
-          Get-ChildItem -Recurse -Force
-
-      - name: Run Entity Framework Migrations
-        run: |
-          cd MedFastPlatFormmicroservices/Medfast.Services.MedicationAPI
-          dotnet ef database update --verbose
-        env:
-          CONNECTION_STRING: "Server=tcp:medrxsqlserver.database.windows.net,1433;Initial Catalog=medrxdevdb;Persist Security Info=False;User ID=medrxdb;Password=save101#;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30"
-
   deploy:
     runs-on: windows-latest
-    needs: migrate
+    needs: build
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
@@ -79,6 +47,19 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: .net-app
+
+      - name: Set up .NET Core for deployment
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: true
+
+      - name: Run Entity Framework Migrations
+        run: |
+          cd Medfast.Services.MedicationAPI
+          dotnet ef database update --verbose
+        env:
+          CONNECTION_STRING: "Server=tcp:medrxsqlserver.database.windows.net,1433;Initial Catalog=medrxdevdb;Persist Security Info=False;User ID=medrxdb;Password=save101#;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30:"
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
