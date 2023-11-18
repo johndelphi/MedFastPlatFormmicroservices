@@ -26,6 +26,24 @@ jobs:
         run: |
           echo "ConnectionStrings__DefaultConnection=${{ secrets.DEFAULTCONNECTION }}" >> $GITHUB_ENV
           echo "JwtSettings__SecretKey=${{ secrets.JWTSECRETKEY }}" >> $GITHUB_ENV
+          echo "DOTNET_ROOT=${{ runner.toolcache-path }}/dotnet" >> $GITHUB_ENV
+          echo "::set-output name=connection-string::${{ secrets.DEFAULTCONNECTION }}"
+          echo "::set-output name=secret-key::${{ secrets.JWTSECRETKEY }}"
+          echo "::set-output name=dotnet-root::${{ runner.toolcache-path }}/dotnet"
+
+      - name: Debug Environment Variables
+        run: |
+          echo "Connection String: ${{ secrets.DEFAULTCONNECTION }}"
+          echo "Secret Key: ${{ secrets.JWTSECRETKEY }}"
+          echo "DOTNET_ROOT: ${{ runner.toolcache-path }}/dotnet"
+        shell: bash
+
+      - name: Print Secrets for Verification
+        run: |
+          echo "Connection String: ${{ secrets.DEFAULTCONNECTION }}"
+          echo "Secret Key: ${{ secrets.JWTSECRETKEY }}"
+          echo "DOTNET_ROOT: ${{ runner.toolcache-path }}/dotnet"
+        shell: bash
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
@@ -60,8 +78,3 @@ jobs:
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DE94F9B07B06446EA400FF616C3CB384 }}
           package: .
-
-env:
-  ConnectionStrings__DefaultConnection: ${{ secrets.DEFAULTCONNECTION }}
-  JwtSettings__SecretKey: ${{ secrets.JWTSECRETKEY }}
-  DOTNET_ROOT: C:\Users\runneradmin\AppData\Local\Microsoft\dotnet
