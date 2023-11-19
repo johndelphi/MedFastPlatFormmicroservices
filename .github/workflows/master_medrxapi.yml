@@ -29,7 +29,7 @@ jobs:
         run: dotnet tool install --global dotnet-ef --version 6.0.4
 
       - name: Apply Entity Framework Core Migrations
-        run: dotnet ef database update --project MedfastPlatform.sln
+        run: dotnet ef database update --project Medfast.Services.MedicationAPI/Medfast.Services.MedicationAPI.csproj
         env:
           ConnectionStrings__DefaultConnection: ${{ secrets.DefaultConnection }}
 
