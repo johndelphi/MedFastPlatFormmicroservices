@@ -26,12 +26,15 @@ jobs:
         run: dotnet build --configuration Release
 
       - name: Install Entity Framework Core CLI
-        run: dotnet tool install --global dotnet-ef
+        run: dotnet tool install --global dotnet-ef --version 6.0.4
+
+      - name: Set Production Connection String
+        run: echo "ConnectionStrings__DefaultConnection=${{ secrets.DEFAULTCONNECTION }}" >> $GITHUB_ENV
 
       - name: Apply Entity Framework Core Migrations
-        run: dotnet ef database update --project MedfastPlatform.sln
+        run: dotnet ef database update --project Medfast.Services.MedicationAPI/Medfast.Services.MedicationAPI.csproj
         env:
-          ConnectionStrings__DefaultConnection: ${{ secrets.DefaultConnection }}
+          ConnectionStrings__DefaultConnection: ${{ secrets.DEFAULTCONNECTION }}
 
       - name: dotnet publish
         run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
@@ -59,7 +62,12 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'Medrxapi'
+          app-name: 'Medrxapi'  # Replace with your Azure Web App name
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DE94F9B07B06446EA400FF616C3CB384 }}
           package: .
+          environment-variables: |
+            - name: ConnectionStrings__DefaultConnection
+              value: ${{ secrets.DEFAULTCONNECTION }}
+
+
