@@ -1,7 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy ASP.Net Core app to Azure Web App - medRx1
+name: Build and deploy ASP.Net Core app to Azure Web App - Medrxapi
 
 on:
   push:
@@ -9,30 +6,41 @@ on:
       - master
   workflow_dispatch:
 
+# CONFIGURATION
+env:
+  AZURE_WEBAPP_NAME: Medrxapi  # Set this to your application's name
+  AZURE_WEBAPP_PACKAGE_PATH: '.'  # Set this to the path to your web app project, defaults to the repository root
+  DOTNET_VERSION: '6.0.x'  # Set this to the .NET version to use
+  AZURE_RESOURCEGROUP_NAME: medrxpa_group  # Updated resource group name
+  SQLSERVER_NAME: medrxsqlserver  # Updated SQL server name
+  DATABASE_NAME: medrxdevdb  # Updated SQL database name
+  SQLADMIN_LOGIN: ${{ secrets.SQLADMIN_LOGIN }}  # Create a secret in your GitHub repo for the SQL Admin login name you want to use
+  SQLADMIN_PASS: ${{ secrets.SQLADMIN_PASS }}  # Create a secret in your GitHub repo for the SQL Admin password you want to use
+
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '6.0.x'
-          include-prerelease: true
+          dotnet-version: ${{ env.DOTNET_VERSION }} 
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish -c Release -o ${{ env.DOTNET_ROOT }}/myapp
 
-      - name: Upload artifact for deployment job
+      - name: Upload artifact for deployment
         uses: actions/upload-artifact@v2
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: ${{ env.DOTNET_ROOT }}/myapp
 
   deploy:
     runs-on: windows-latest
@@ -42,7 +50,7 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - name: Download artifact from build job
+      - name: Download artifact for deployment
         uses: actions/download-artifact@v2
         with:
           name: .net-app
@@ -51,8 +59,15 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'medRx1'
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_208AF19D8B6B4D92AB9891196921B893 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DE94F9B07B06446EA400FF616C3CB384 }}
           package: .
+
+      - name: Update Database
+        run: |
+          dotnet tool install --global dotnet-ef
+          dotnet ef database update
+        env:
+          ConnectionStrings__MyDbConnection: ${{ env.SQL_DB_CONN_STR }}
 
