@@ -12,7 +12,6 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-    environment: name_of_your_github_environment  # Replace with your GitHub environment name
 
     steps:
       - uses: actions/checkout@v2
@@ -20,19 +19,19 @@ jobs:
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '6.0.x'  # Ensure this matches your project's .NET version
+          dotnet-version: '6.0.x'
           include-prerelease: true
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
       - name: Install Entity Framework Core CLI
-        run: dotnet tool install --global dotnet-ef --version 7.0.3  # Ensure this matches your EF Core version
+        run: dotnet tool install --global dotnet-ef --version 6.0.4
 
       - name: Apply Entity Framework Core Migrations
         run: dotnet ef database update --project Medfast.Services.MedicationAPI/Medfast.Services.MedicationAPI.csproj
         env:
-          ConnectionStrings__DefaultConnection: ${{ env.DEFAULTCONNECTION }}  # Using the repository variable
+          ConnectionStrings__DefaultConnection: ${{ secrets.DEFAULTCONNECTION }} # Use the secret here
 
       - name: dotnet publish
         run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
@@ -46,7 +45,9 @@ jobs:
   deploy:
     runs-on: windows-latest
     needs: build
-    environment: name_of_your_github_environment  # Replace with your GitHub environment name
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
       - name: Download artifact from build job
@@ -58,7 +59,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'Medrxapi'  # Replace with your Azure Web App name
+          app-name: 'Medrxapi'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DE94F9B07B06446EA400FF616C3CB384 }}
           package: .
