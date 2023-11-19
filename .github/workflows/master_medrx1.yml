@@ -25,6 +25,14 @@ jobs:
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
+      - name: Install Entity Framework Core CLI
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Apply Entity Framework Core Migrations
+        run: dotnet ef database update --project MedfastPlatform.sln
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.DefaultConnection }}
+
       - name: dotnet publish
         run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
