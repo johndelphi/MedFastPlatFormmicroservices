@@ -31,7 +31,7 @@ jobs:
       - name: Apply Entity Framework Core Migrations
         run: dotnet ef database update --project Medfast.Services.MedicationAPI/Medfast.Services.MedicationAPI.csproj
         env:
-          ConnectionStrings__DefaultConnection: ${{ secrets.DefaultConnection }}
+          DefaultConnection: ${{ secrets.DefaultConnection }}
 
       - name: dotnet publish
         run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
