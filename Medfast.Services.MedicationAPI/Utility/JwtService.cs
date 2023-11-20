@@ -15,7 +15,7 @@ namespace Medfast.Services.MedicationAPI.Utility
         public JwtService(IConfiguration configuration)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration), "Configuration cannot be null.");
-            _secretKey = _configuration["JwtSettings:SecretKey"];
+            _secretKey = Environment.GetEnvironmentVariable("JwtSettings:SecretKey");
         }
         public string GenerateToken(string email,  params string[] roles)
         {
