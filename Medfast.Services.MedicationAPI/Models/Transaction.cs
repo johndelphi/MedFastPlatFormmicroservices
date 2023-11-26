@@ -20,5 +20,7 @@ public class Transaction
     public User User { get; set; } // Navigation property
 
     public int PharmacyMedicineId { get; set; }
-    public PharmacyMedicine PharmacyMedicine { get; set; } // Navigation property
+    public PharmacyMedicine PharmacyMedicine { get; set; }
+
+
 }
