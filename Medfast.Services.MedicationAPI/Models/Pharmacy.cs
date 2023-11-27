@@ -30,12 +30,8 @@ public class Pharmacy
     public double Latitude { get; set; }
     public double Longitude { get; set; }
 
-   
-    public int? ApplicationUserPharmacyId { get; set; }
-
- 
-    public ApplicationUser ApplicationUser { get; set; }
-
+    // Updated navigation property
+    public ICollection<ApplicationUser> ApplicationUsers { get; set; }
 
     // Navigation property
     public List<PharmacyMedicine> PharmacyMedicines { get; set; }
