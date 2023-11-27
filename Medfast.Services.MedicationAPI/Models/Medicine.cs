@@ -27,6 +27,7 @@ namespace Medfast.Services.MedicationAPI.Models
         public double Price { get; set; }
         public DateTime ManufactureDate { get; set; }
         public DateTime ExpiryDate { get; set; }
+        public string Barcode { get; set; }
 
         // Navigation property
         public List<PharmacyMedicine> PharmacyMedicines { get; set; }
