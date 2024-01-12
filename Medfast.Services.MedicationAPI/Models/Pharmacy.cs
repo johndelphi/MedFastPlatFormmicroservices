@@ -11,17 +11,22 @@ public class Pharmacy
     [MaxLength(100)]
     public string PharmacyName { get; set; }
 
-    [MaxLength(50)]
-    public string Region { get; set; }
+
 
     [MaxLength(50)]
-    public string City { get; set; }
+    public string? Region { get; set; }
+
+    [MaxLength(40)]
+    public string? County { get; set; }
 
     [MaxLength(50)]
-    public string SubCity { get; set; }
+    public string? City { get; set; }
+
+    [MaxLength(50)]
+    public string? SubCity { get; set; }
 
     [MaxLength(100)]
-    public string Landmark { get; set; }
+    public string? Landmark { get; set; }
     
     
     [Phone]
