@@ -18,7 +18,7 @@ public class Pharmacy
     public string City { get; set; }
 
     [MaxLength(50)]
-    public string SubCity { get; set; }
+    public string County { get; set; }
 
     [MaxLength(100)]
     public string Landmark { get; set; }

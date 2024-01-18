@@ -15,7 +15,7 @@ namespace Medfast.Services.MedicationAPI.Models.Dto.CreatePharmacyDto;
         public string City { get; set; }
 
         [MaxLength(50, ErrorMessage = "Sub city cannot exceed 50 characters.")]
-        public string SubCity { get; set; }
+        public string County { get; set; }
 
         [MaxLength(100, ErrorMessage = "Landmark cannot exceed 100 characters.")]
         public string Landmark { get; set; }
