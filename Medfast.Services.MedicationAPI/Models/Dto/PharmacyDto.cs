@@ -13,7 +13,7 @@ public class PharmacyDto
     
     public string City { get; set; }
     
-    public string County { get; set; }
+    public string SubCity { get; set; }
     
     public string Landmark { get; set; }
     public double Latitude { get; set; }
