@@ -62,14 +62,13 @@ namespace Medfast.Services.MedicationAPI.Controllers
             if (result.Succeeded)
             {
                 // Generate JWT token
-                var token = _jwtService.GenerateToken(user.Email);
+                var token = _jwtService.GenerateToken(user.Email,pharmacy.PharmacyName);
                 return Ok(new { Token = token });
             }
 
             var errorMessages = result.Errors.Select(e => e.Description).ToList();
             return BadRequest(new { Errors = errorMessages });
         }
-
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserLoginDto model)
         {
@@ -79,14 +78,21 @@ namespace Medfast.Services.MedicationAPI.Controllers
             }
 
             var user = await _userManager.FindByEmailAsync(model.Email);
-
             if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
             {
                 return Unauthorized("Invalid email or password.");
             }
 
-            var token = _jwtService.GenerateToken(user.Email);
+            var pharmacy = await _pharmacyRepository.GetPharmacyById((int)user.PharmacyId);
+            if (pharmacy == null)
+            {
+                return NotFound($"Pharmacy with ID {user.PharmacyId} not found.");
+            }
+
+            // Pass the pharmacy name to GenerateToken
+            var token = _jwtService.GenerateToken(user.Email, pharmacy.PharmacyName);
             return Ok(new { Token = token });
         }
+
     }
 }
