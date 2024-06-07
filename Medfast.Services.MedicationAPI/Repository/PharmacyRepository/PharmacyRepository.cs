@@ -5,19 +5,23 @@ using Medfast.Services.MedicationAPI.Models;
 using Medfast.Services.MedicationAPI.DbContexts;
 using Medfast.Services.MedicationAPI.Models.Dto.InventoryDto;
 using Medfast.Services.MedicationAPI.Models.Dto.CreatePharmacyDto;
+using Microsoft.Extensions.Logging;
 
 namespace Medfast.Services.MedicationAPI.Repository.PharmacyRepository;
 
 public class PharmacyRepository : IPharmacyRepository
 {
-    private readonly  ApplicationDbContext _dbContext;
+    private readonly ApplicationDbContext _dbContext;
     private readonly IMapper _mapper;
-    
-    public PharmacyRepository(ApplicationDbContext dbContext, IMapper mapper)
+    private readonly ILogger<PharmacyRepository> _logger;
+
+    public PharmacyRepository(ApplicationDbContext dbContext, IMapper mapper, ILogger<PharmacyRepository> logger)
     {
-        _dbContext = dbContext;
-        _mapper = mapper;
+        _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
+
     public async Task AddPharmacy(PharmacyDto pharmacyDto)
     {
         var pharmacy = _mapper.Map<Pharmacy>(pharmacyDto);
@@ -35,67 +39,51 @@ public class PharmacyRepository : IPharmacyRepository
         return _mapper.Map<IEnumerable<PharmacyDto>>(pharmacies);
     }
 
-    
-    
     public async Task CreatePharmacy(Pharmacy pharmacy)
     {
         _dbContext.Pharmacies.Add(pharmacy);
 
         await _dbContext.SaveChangesAsync();
     }
-    //public async Task<(Pharmacy Pharmacy, User AdminUser, string ErrorMessage)> CreatePharmacyWithAdmin(Pharmacy pharmacy, User adminUser)
-    //{
-    //    using var transaction = _dbContext.Database.BeginTransaction();
 
-    //    try
-    //    {
-    //        // Check for an existing pharmacy with the same name and/or phone number
-    //        var existingPharmacy = await _dbContext.Pharmacies
-    //            .AnyAsync(p => p.PhoneNumber == pharmacy.PhoneNumber);
-    //        if (existingPharmacy)
-    //        {
-    //            return (null, null, "A pharmacy with the same phone number already exists.");
-    //        }
-
-    //        // Add the pharmacy to the DbContext
-    //        _dbContext.Pharmacies.Add(pharmacy);
-    //        await _dbContext.SaveChangesAsync();
-
-    //        // Assign the newly created pharmacy ID to the admin user and add the user to the DbContext
-    //        adminUser.PharmacyId = pharmacy.PharmacyId;
-    //        _dbContext.Users.Add(adminUser);
-    //        await _dbContext.SaveChangesAsync();
-
-    //        // Commit the transaction
-    //        await transaction.CommitAsync();
-
-    //        return (pharmacy, adminUser, null);
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        // Rollback the transaction if any exception occurs
-    //        await transaction.RollbackAsync();
-    //        return (null, null, $"An error occurred while creating the pharmacy and admin user: {ex.Message}");
-    //    }
-    //}
     public async Task CreateAdminUser(User adminUser)
     {
-     //   _dbContext.Users.Add(adminUser);
+        // _dbContext.Users.Add(adminUser);
         await _dbContext.SaveChangesAsync();
     }
 
-
-    public async Task<Pharmacy> GetPharmacyById(int pharmacyId)
+    public async Task<Pharmacy?> GetPharmacyById(int pharmacyId)
     {
-        return await _dbContext.Pharmacies.FindAsync(pharmacyId);
+        var pharmacy = await _dbContext.Pharmacies
+            .Select(p => new Pharmacy
+            {
+                PharmacyId = p.PharmacyId,
+                PharmacyName = p.PharmacyName ?? string.Empty,
+                PhoneNumber = p.PhoneNumber ?? string.Empty,
+                City = p.City ?? string.Empty,
+                SubCity = p.SubCity ?? string.Empty,
+                Region = p.Region ?? string.Empty,
+                Landmark = p.Landmark ?? string.Empty,
+                Latitude = p.Latitude,
+                Longitude = p.Longitude
+            })
+            .FirstOrDefaultAsync(p => p.PharmacyId == pharmacyId);
+
+        if (pharmacy == null)
+        {
+            _logger.LogWarning("Pharmacy with ID {PharmacyId} not found.", pharmacyId);
+        }
+
+        return pharmacy;
     }
+
     public async Task<Pharmacy?> GetPharmacyByNameAndPhoneNumber(string pharmacyName, string phoneNumber)
     {
         return await _dbContext.Pharmacies
             .FirstOrDefaultAsync(p => p.PharmacyName == pharmacyName || p.PhoneNumber == phoneNumber);
     }
 
-    #region inventory
+    #region Inventory
 
     public async Task AddMedicineToPharmacyInventory(int pharmacyId, PharmacyMedicineCreateDto pharmacyMedicineCreateDto)
     {
@@ -118,13 +106,11 @@ public class PharmacyRepository : IPharmacyRepository
             Price = pharmacyMedicineCreateDto.Price,
             MedicineDiscount = pharmacyMedicineCreateDto.MedicineDiscount,
             QuantityInStock = pharmacyMedicineCreateDto.QuantityInStock
-            
         };
 
         _dbContext.PharmacyMedicines.Add(pharmacyMedicine);
         await _dbContext.SaveChangesAsync();
     }
-
 
     public async Task<PharmacyMedicine?> GetPharmacyMedicineByPharmacyIdAndMedicineId(int pharmacyId, int medicineId)
     {
@@ -132,7 +118,7 @@ public class PharmacyRepository : IPharmacyRepository
             .Include(pm => pm.Medicine)
             .SingleOrDefaultAsync(pm => pm.PharmacyId == pharmacyId && pm.MedicineId == medicineId);
     }
-    
+
     public async Task<PharmacyMedicine?> GetPharmacyMedicineByPharmacyIdAndMedicineName(int pharmacyId, string medicineName)
     {
         return await _dbContext.PharmacyMedicines
@@ -140,9 +126,8 @@ public class PharmacyRepository : IPharmacyRepository
             .FirstOrDefaultAsync(pm => pm.PharmacyId == pharmacyId && pm.Medicine.MedicineName == medicineName);
     }
 
-    
-
     #endregion
+
     public async Task<bool> SaveChanges()
     {
         return (await _dbContext.SaveChangesAsync()) > 0;
@@ -168,7 +153,7 @@ public class PharmacyRepository : IPharmacyRepository
 
             // Assign the newly created pharmacy ID to the admin user and add the user to the DbContext
             adminUser.PharmacyId = pharmacy.PharmacyId;
-           // _dbContext.Users.Add(adminUser);
+            // _dbContext.Users.Add(adminUser);
             await _dbContext.SaveChangesAsync();
 
             // Commit the transaction
@@ -184,6 +169,4 @@ public class PharmacyRepository : IPharmacyRepository
             return (null, null, $"An error occurred while creating the pharmacy and admin user: {ex.Message}");
         }
     }
-
-    
 }
