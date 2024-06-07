@@ -1,4 +1,7 @@
-name: Build and Deploy
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy ASP.Net Core app to Azure Web App - Medrxapi
 
 on:
   push:
@@ -11,8 +14,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v1
@@ -20,11 +22,16 @@ jobs:
           dotnet-version: '6.0.x'
           include-prerelease: true
 
-      - name: Install EF Core CLI tools
-        run: dotnet tool install --global dotnet-ef --version 7.0.0
-
       - name: Build with dotnet
         run: dotnet build --configuration Release
+
+      - name: Install Entity Framework Core CLI
+        run: dotnet tool install --global dotnet-ef --version 6.0.4
+
+      - name: Apply Entity Framework Core Migrations
+        run: dotnet ef database update --project Medfast.Services.MedicationAPI/Medfast.Services.MedicationAPI.csproj
+        env:
+          DefaultConnection: ${{ secrets.DefaultConnection }}
 
       - name: dotnet publish
         run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
@@ -48,18 +55,11 @@ jobs:
         with:
           name: .net-app
 
-      - name: Run Entity Framework Migrations
-        run: |
-          cd MedFastPlatFormmicroservices\Medfast.Services.MedicationAPI
-          dotnet ef database update --verbose
-        env:
-          CONNECTION_STRING: "Server=tcp:medrxsqlserver.database.windows.net,1433;Initial Catalog=medrxdevdb;Persist Security Info=False;User ID=medrxdb;Password=save101#;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30:"
-
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'medRx1'
+          app-name: 'Medrxapi'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_208AF19D8B6B4D92AB9891196921B893 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DE94F9B07B06446EA400FF616C3CB384 }}
           package: .
