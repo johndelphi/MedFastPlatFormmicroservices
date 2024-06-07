@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Medfast.Services.MedicationAPI.DbContexts
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {

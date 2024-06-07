@@ -8,6 +8,7 @@ using Medfast.Services.MedicationAPI.Repository.PharmacyRepository;
 using Medfast.Services.MedicationAPI.Utility;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Medfast.Services.MedicationAPI.Controllers
 {
@@ -20,16 +21,17 @@ namespace Medfast.Services.MedicationAPI.Controllers
         private readonly JwtService _jwtService;
         private readonly IPharmacyRepository _pharmacyRepository;
         private readonly EmailService _emailService;
+        private readonly ILogger<AccountController> _logger;
 
         public AccountController(ApplicationDbContext context, UserManager<ApplicationUser> userManager,
-            JwtService jwtService,
-            IPharmacyRepository pharmacyRepository, EmailService emailService)
+            JwtService jwtService, IPharmacyRepository pharmacyRepository, EmailService emailService, ILogger<AccountController> logger)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
             _pharmacyRepository = pharmacyRepository ?? throw new ArgumentNullException(nameof(pharmacyRepository));
             _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         [HttpPost("register")]
@@ -37,27 +39,44 @@ namespace Medfast.Services.MedicationAPI.Controllers
         {
             if (!ModelState.IsValid)
             {
+                _logger.LogWarning("Invalid model state for registration.");
                 return BadRequest(ModelState);
             }
+
+            _logger.LogInformation("Registering user with email: {Email}", model.Email);
 
             var existingUser = await _userManager.FindByEmailAsync(model.Email);
             if (existingUser != null)
             {
+                _logger.LogWarning("User with email {Email} already exists.", model.Email);
                 return Conflict("User with this email already exists.");
             }
 
-            var pharmacy = await _pharmacyRepository.GetPharmacyById(model.PharmacyId);
-            if (pharmacy == null)
+            Pharmacy pharmacy;
+            try
             {
-                return BadRequest("Invalid pharmacy ID.");
+                pharmacy = await _pharmacyRepository.GetPharmacyById(model.PharmacyId);
+                if (pharmacy == null)
+                {
+                    _logger.LogWarning("Pharmacy with ID {PharmacyId} not found.", model.PharmacyId);
+                    return BadRequest("Invalid pharmacy ID.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving pharmacy with ID {PharmacyId}", model.PharmacyId);
+                return StatusCode(500, "Internal server error.");
             }
 
             var user = new ApplicationUser
             {
+                Id = Guid.NewGuid(),
                 Email = model.Email,
                 UserName = model.username,
                 PhoneNumber = model.PhoneNumber,
-                PharmacyId = pharmacy.PharmacyId,
+                PharmacyId = model.PharmacyId,
+                PasswordResetCode = null,  // Ensure this is set to null
+                ResetTokenExpiration = null  // Ensure this is set to null
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -66,10 +85,12 @@ namespace Medfast.Services.MedicationAPI.Controllers
             {
                 // Generate JWT token
                 var token = _jwtService.GenerateToken(user.Email, pharmacy.PharmacyName);
+                _logger.LogInformation("User registered successfully. Email: {Email}", user.Email);
                 return Ok(new { Token = token });
             }
 
             var errorMessages = result.Errors.Select(e => e.Description).ToList();
+            _logger.LogError("User registration failed. Errors: {Errors}", string.Join(", ", errorMessages));
             return BadRequest(new { Errors = errorMessages });
         }
 
@@ -78,19 +99,31 @@ namespace Medfast.Services.MedicationAPI.Controllers
         {
             if (!ModelState.IsValid)
             {
+                _logger.LogWarning("Invalid model state for login.");
                 return BadRequest(ModelState);
             }
 
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
             {
+                _logger.LogWarning("Invalid login attempt for email: {Email}", model.Email);
                 return Unauthorized("Invalid email or password.");
             }
 
-            var pharmacy = await _pharmacyRepository.GetPharmacyById((int)user.PharmacyId);
-            if (pharmacy == null)
+            Pharmacy pharmacy;
+            try
             {
-                return NotFound($"Pharmacy with ID {user.PharmacyId} not found.");
+                pharmacy = await _pharmacyRepository.GetPharmacyById((int)user.PharmacyId);
+                if (pharmacy == null)
+                {
+                    _logger.LogWarning("Pharmacy with ID {PharmacyId} not found.", user.PharmacyId);
+                    return NotFound($"Pharmacy with ID {user.PharmacyId} not found.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving pharmacy with ID {PharmacyId}", user.PharmacyId);
+                return StatusCode(500, "Internal server error.");
             }
 
             // Pass the pharmacy name to GenerateToken
@@ -103,12 +136,14 @@ namespace Medfast.Services.MedicationAPI.Controllers
         {
             if (!ModelState.IsValid)
             {
+                _logger.LogWarning("Invalid model state for password reset request.");
                 return BadRequest(ModelState);
             }
 
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
+                _logger.LogWarning("Password reset requested for non-existing email: {Email}", model.Email);
                 return NotFound("User with this email does not exist.");
             }
 
@@ -132,6 +167,7 @@ namespace Medfast.Services.MedicationAPI.Controllers
         {
             if (!ModelState.IsValid)
             {
+                _logger.LogWarning("Invalid model state for password reset.");
                 return BadRequest(ModelState);
             }
 
@@ -139,6 +175,7 @@ namespace Medfast.Services.MedicationAPI.Controllers
             if (user == null || user.PasswordResetCode != model.ResetCode ||
                 user.ResetTokenExpiration < DateTime.UtcNow)
             {
+                _logger.LogWarning("Invalid password reset code for email: {Email}", model.Email);
                 return BadRequest("Invalid reset code or the code has expired.");
             }
 
@@ -147,6 +184,7 @@ namespace Medfast.Services.MedicationAPI.Controllers
             if (!resetResult.Succeeded)
             {
                 var errorMessages = resetResult.Errors.Select(e => e.Description).ToList();
+                _logger.LogError("Password reset failed for email: {Email}. Errors: {Errors}", model.Email, string.Join(", ", errorMessages));
                 return BadRequest(new { Errors = errorMessages });
             }
 
@@ -155,6 +193,7 @@ namespace Medfast.Services.MedicationAPI.Controllers
             user.ResetTokenExpiration = null;
             await _context.SaveChangesAsync();
 
+            _logger.LogInformation("Password reset successfully for email: {Email}", model.Email);
             return Ok("Password has been reset successfully.");
         }
     }
